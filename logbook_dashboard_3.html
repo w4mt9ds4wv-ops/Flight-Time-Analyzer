@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logbook · ATP Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080d18;
+  --surface: #0f1929;
+  --surface-2: #162032;
+  --surface-3: #1d2a40;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59,130,246,0.15);
+  --green: #10b981;
+  --green-glow: rgba(16,185,129,0.12);
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --text: #e2e8f0;
+  --text-2: #94a3b8;
+  --text-3: #475569;
+  --border: rgba(255,255,255,0.07);
+  --border-2: rgba(255,255,255,0.12);
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 52px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 12px;
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+.topbar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* topbar buttons */
+.topbar-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.topbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-3);
+  border: 1px solid var(--border-2);
+  border-radius: 7px;
+  padding: 7px 12px;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
+  font-family: inherit;
+}
+.topbar-btn:hover, .topbar-btn:active { border-color: var(--accent); background: var(--accent-glow); }
+.topbar-btn svg { flex-shrink: 0; }
+.topbar-btn.pdf-btn { display: none; }
+.topbar-btn.pdf-btn.visible { display: flex; }
+.btn-text { display: none; }
+@media (min-width: 500px) { .btn-text { display: inline; } }
+#fileInput { display: none; }
+
+/* ── PRINT / PDF EXPORT ── */
+@media print {
+  @page { size: 8.5in 11in; margin: 0.5in 0.6in; }
+
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box !important; }
+  .topbar, #emptyState, .topbar-actions { display: none !important; }
+  #dashboard { display: block !important; }
+
+  body {
+    background: #fff !important;
+    color: #0f172a !important;
+    font-size: 9px !important;
+    line-height: 1.35 !important;
+    -webkit-text-size-adjust: none !important;
+  }
+  .main { padding: 0 !important; max-width: 100% !important; width: 100% !important; }
+
+  /* ── PRINT HEADER ── */
+  .print-header { display: block !important; margin-bottom: 8px !important; padding-bottom: 5px !important; border-bottom: 1.5px solid #0f172a !important; }
+  .print-header-title { font-size: 14px !important; font-weight: 700 !important; color: #0f172a !important; }
+  .print-header-sub { font-size: 9px !important; color: #64748b !important; margin-top: 1px !important; }
+
+  /* ── PROGRESS BAR ── */
+  .big-progress { background: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 5px !important; padding: 7px 9px !important; margin-bottom: 6px !important; }
+  .bp-header { margin-bottom: 4px !important; flex-wrap: nowrap !important; }
+  .bp-title { font-size: 9px !important; font-weight: 600 !important; color: #0f172a !important; }
+  .bp-sub { font-size: 8px !important; color: #64748b !important; }
+  .bp-track { height: 6px !important; background: #e2e8f0 !important; margin-bottom: 3px !important; overflow: hidden !important; }
+  .bp-labels { font-size: 8px !important; color: #94a3b8 !important; }
+  .bp-labels strong { color: #475569 !important; }
+
+  /* ── STATS — 8 across ── */
+  .stats-row { display: grid !important; grid-template-columns: repeat(8, 1fr) !important; gap: 4px !important; margin-bottom: 6px !important; }
+  .stat-tile { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 4px !important; padding: 5px 6px !important; }
+  .stat-label { font-size: 7px !important; color: #94a3b8 !important; letter-spacing: 0.04em !important; margin-bottom: 2px !important; text-transform: uppercase !important; }
+  .stat-val { font-size: 12px !important; font-weight: 700 !important; color: #0f172a !important; line-height: 1 !important; }
+  .stat-tile.accent-blue .stat-val { color: #2563eb !important; }
+  .stat-sub { font-size: 7px !important; color: #64748b !important; margin-top: 1px !important; }
+
+  /* ── GAUGES — horizontal pill layout ── */
+  .gauge-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; margin-bottom: 6px !important; }
+  .gauge-card {
+    background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 5px !important;
+    padding: 7px 10px !important; flex-direction: row !important; gap: 10px !important;
+    align-items: center !important; justify-content: flex-start !important;
+  }
+  .gauge-wrap { width: 64px !important; height: 64px !important; flex-shrink: 0 !important; }
+  .gauge-svg { width: 64px !important; height: 64px !important; }
+  .gauge-track { stroke: #e2e8f0 !important; stroke-width: 6 !important; }
+  .gauge-fill { stroke-width: 6 !important; }
+  .gauge-pct { font-size: 13px !important; font-weight: 700 !important; }
+  .gauge-pct-sign { font-size: 8px !important; }
+  .gauge-done { font-size: 7.5px !important; color: #94a3b8 !important; margin-top: 1px !important; }
+  .gauge-title { font-size: 9px !important; font-weight: 600 !important; color: #0f172a !important; text-align: left !important; }
+  .gauge-detail { font-size: 8px !important; color: #64748b !important; text-align: left !important; margin-top: 2px !important; line-height: 1.4 !important; }
+
+  /* ── MONTHLY CHART + ATP ── */
+  .grid-2 { display: grid !important; grid-template-columns: 1fr 210px !important; gap: 6px !important; margin-bottom: 6px !important; }
+  .card { background: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 5px !important; padding: 7px 9px !important; }
+  .card-title { font-size: 7px !important; color: #94a3b8 !important; margin-bottom: 5px !important; letter-spacing: 0.06em !important; }
+  .chart-wrap { height: 130px !important; }
+
+  /* ── ATP LIST ── */
+  .atp-list { gap: 5px !important; }
+  .atp-req { gap: 2px 5px !important; }
+  .atp-name { font-size: 8px !important; font-weight: 500 !important; color: #0f172a !important; }
+  .atp-badge { font-size: 7px !important; padding: 1px 5px !important; }
+  .atp-badge.met { background: #d1fae5 !important; color: #065f46 !important; border-color: #6ee7b7 !important; }
+  .atp-badge.pending { background: #dbeafe !important; color: #1e40af !important; border-color: #93c5fd !important; }
+  .atp-track { height: 3px !important; background: #e2e8f0 !important; }
+  .atp-nums { font-size: 7.5px !important; color: #94a3b8 !important; }
+
+  /* ── SECTION HEADERS ── */
+  .section-hdr { font-size: 7px !important; color: #94a3b8 !important; margin: 7px 0 4px !important; padding-bottom: 3px !important; border-bottom: 1px solid #e2e8f0 !important; page-break-after: avoid !important; }
+
+  /* ── BREAKDOWN — 6 col ── */
+  .breakdown-grid { display: grid !important; grid-template-columns: repeat(6, 1fr) !important; gap: 4px !important; margin-bottom: 6px !important; }
+  .breakdown-row { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 4px !important; padding: 4px 6px !important; flex-direction: column !important; align-items: flex-start !important; gap: 1px !important; }
+  .breakdown-label { font-size: 7px !important; color: #94a3b8 !important; }
+  .breakdown-val { font-size: 9px !important; font-weight: 600 !important; color: #0f172a !important; }
+
+  /* ── PACE — 6 col ── */
+  .pace-row { display: grid !important; grid-template-columns: repeat(6, 1fr) !important; gap: 4px !important; margin-bottom: 6px !important; }
+
+  /* ── YEARLY CHART ── */
+  .card + .card, .card[style] { margin-bottom: 6px !important; }
+
+  /* ── AIRCRAFT TABLE ── */
+  .aircraft-table { font-size: 8px !important; }
+  .aircraft-table th { font-size: 7px !important; padding-bottom: 4px !important; color: #94a3b8 !important; border-color: #e2e8f0 !important; }
+  .aircraft-table td { padding: 3px 6px !important; color: #0f172a !important; border-color: #f1f5f9 !important; }
+
+  /* ── PAGE BREAKS ── */
+  .gauge-row, .grid-2, .breakdown-grid { page-break-inside: avoid !important; }
+  .stats-row { page-break-inside: avoid !important; }
+}
+
+.print-header {
+  display: none;
+  margin-bottom: 14px;
+  border-bottom: 1.5px solid #0f172a;
+  padding-bottom: 6px;
+}
+.print-header-title { font-size: 16px; font-weight: 700; color: #0f172a; }
+.print-header-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+/* ── LAYOUT ── */
+.main { max-width: 1280px; margin: 0 auto; padding: 16px 12px 48px; }
+@media (min-width: 600px) { .main { padding: 20px 20px 48px; } }
+@media (min-width: 900px) { .main { padding: 24px 24px 48px; } }
+
+/* ── UPLOAD EMPTY STATE ── */
+#emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 52px);
+  text-align: center;
+  padding: 24px 16px;
+  gap: 16px;
+}
+.empty-drop {
+  width: 100%;
+  max-width: 380px;
+  border: 1.5px dashed var(--border-2);
+  border-radius: var(--radius-lg);
+  padding: 40px 24px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.empty-drop:hover, .empty-drop:active, .empty-drop.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.6; }
+.empty-h { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+.empty-sub { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+.empty-tag {
+  display: inline-block;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--accent);
+  margin-top: 12px;
+}
+
+/* ── DASHBOARD ── */
+#dashboard { display: none; }
+
+/* ── 1500 PROGRESS BAR ── */
+.big-progress {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.bp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.bp-title { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.bp-sub { font-size: 11px; color: var(--text-2); }
+.bp-track {
+  height: 10px;
+  background: var(--surface-3);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.bp-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--accent), #60a5fa);
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.bp-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); }
+.bp-labels strong { color: var(--text-2); }
+
+/* ── STATS ROW ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+@media (min-width: 480px) { .stats-row { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 700px) { .stats-row { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1000px) { .stats-row { grid-template-columns: repeat(8, 1fr); } }
+
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 12px;
+}
+.stat-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+.stat-val { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); line-height: 1; }
+.stat-sub { font-size: 10px; color: var(--text-2); margin-top: 3px; }
+.stat-tile.accent-blue .stat-val { color: var(--accent); }
+
+/* ── GAUGES ── */
+.gauge-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.gauge-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.gauge-wrap { position: relative; width: 110px; height: 110px; }
+@media (min-width: 400px) { .gauge-wrap { width: 130px; height: 130px; } }
+.gauge-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.gauge-track { fill: none; stroke: var(--surface-3); stroke-width: 9; }
+.gauge-fill { fill: none; stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1); }
+.gauge-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+}
+.gauge-pct { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+@media (min-width: 400px) { .gauge-pct { font-size: 22px; } }
+.gauge-pct-sign { font-size: 12px; }
+.gauge-done { font-size: 9px; color: var(--text-3); margin-top: 2px; }
+.gauge-title { font-size: 12px; font-weight: 600; color: var(--text); text-align: center; }
+.gauge-detail { font-size: 10px; color: var(--text-2); text-align: center; line-height: 1.5; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+@media (min-width: 600px) { .card { padding: 20px 22px; } }
+.card-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 14px;
+}
+
+/* ── TWO-COL LAYOUT ── */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (min-width: 900px) { .grid-2 { grid-template-columns: 1fr 320px; } }
+
+/* ── CHART ── */
+.chart-wrap { position: relative; width: 100%; height: 200px; }
+@media (min-width: 600px) { .chart-wrap { height: 220px; } }
+
+/* ── ATP REQS ── */
+.atp-list { display: flex; flex-direction: column; gap: 11px; }
+.atp-req {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 8px;
+  align-items: center;
+}
+.atp-name { font-size: 12px; color: var(--text); font-weight: 500; grid-column: 1; }
+.atp-badge {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.atp-badge.met { background: var(--green-glow); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+.atp-badge.pending { background: var(--accent-glow); color: var(--accent); border: 1px solid rgba(59,130,246,0.25); }
+.atp-track-wrap { grid-column: 1; }
+.atp-track { height: 4px; background: var(--surface-3); border-radius: 2px; overflow: hidden; margin-bottom: 2px; }
+.atp-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+.atp-nums { font-size: 10px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+/* ── BREAKDOWN ── */
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+@media (min-width: 600px) { .breakdown-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 900px) { .breakdown-grid { grid-template-columns: repeat(4, 1fr); } }
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  gap: 8px;
+}
+.breakdown-label { font-size: 11px; color: var(--text-2); }
+.breakdown-val { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; }
+
+/* ── PACE ── */
+.pace-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+@media (min-width: 600px) { .pace-row { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 900px) { .pace-row { grid-template-columns: repeat(6, 1fr); } }
+
+/* ── AIRCRAFT TABLE ── */
+.aircraft-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+.aircraft-table th {
+  text-align: left; padding: 0 8px 10px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-3); border-bottom: 1px solid var(--border);
+}
+.aircraft-table td { padding: 8px; border-bottom: 1px solid var(--border); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aircraft-table tr:last-child td { border-bottom: none; }
+.aircraft-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; width: 80px; }
+.ac-bar { display: inline-block; height: 3px; background: var(--accent); border-radius: 2px; vertical-align: middle; margin-left: 8px; opacity: 0.4; }
+
+/* ── SECTION HEADER ── */
+.section-hdr {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-3);
+  margin: 20px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-title">Logbook Dashboard</div>
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn pdf-btn" id="pdfBtn" aria-label="Export PDF" onclick="exportPDF()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span class="btn-text">Export PDF</span>
+    </button>
+    <label class="topbar-btn" for="fileInput">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="btn-text" id="uploadLabel">Upload CSV</span>
+    </label>
+  </div>
+  <input type="file" id="fileInput" accept=".csv,.txt">
+</nav>
+
+<!-- EMPTY STATE -->
+<div id="emptyState">
+  <label class="empty-drop" for="fileInput" id="dropZone">
+    <div class="empty-icon">✈</div>
+    <div class="empty-h">Load your logbook</div>
+    <div class="empty-sub">
+      In LogTen: Reports → Export Flights (Tab)<br>
+      then tap the upload button or drop the file here.
+    </div>
+    <div class="empty-tag">Export Flights (Tab) .csv</div>
+  </label>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="main">
+
+    <div class="print-header">
+      <div class="print-header-title">Logbook Analysis</div>
+      <div class="print-header-sub" id="printHeaderSub"></div>
+    </div>
+
+    <div class="big-progress">
+      <div class="bp-header">
+        <div class="bp-title">Road to 1,500 hours</div>
+        <div class="bp-sub" id="bigProgressSub"></div>
+      </div>
+      <div class="bp-track">
+        <div class="bp-fill" id="bigProgressFill" style="width:0%"></div>
+      </div>
+      <div class="bp-labels">
+        <span>0</span>
+        <strong id="bigProgressCurrent"></strong>
+        <span>1,500</span>
+      </div>
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="gauge-row">
+      <div class="gauge-card">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 130 130">
+            <circle class="gauge-track" cx="65" cy="65" r="55"/>
+            <circle class="gauge-fill" id="gauge1Fill" cx="65" cy="65" r="55" stroke="#3b82f6" stroke-dasharray="345.4" stroke-dashoffset="345.4"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-pct" id="gauge1Pct" style="color:#3b82f6">0<span class="gauge-pct-sign">%</span></div>
+            <div class="gauge-done" id="gauge1Done"></div>
+          </div>
+        </div>
+        <div class="gauge-title">Total flight time</div>
+        <div class="gauge-detail" id="gauge1Detail"></div>
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 130 130">
+            <circle class="gauge-track" cx="65" cy="65" r="55"/>
+            <circle class="gauge-fill" id="gauge2Fill" cx="65" cy="65" r="55" stroke="#f59e0b" stroke-dasharray="345.4" stroke-dashoffset="345.4"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-pct" id="gauge2Pct" style="color:#f59e0b">0<span class="gauge-pct-sign">%</span></div>
+            <div class="gauge-done" id="gauge2Done"></div>
+          </div>
+        </div>
+        <div class="gauge-title">Cross-country time</div>
+        <div class="gauge-detail" id="gauge2Detail"></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Monthly hours</div>
+        <div style="font-size:10px;color:var(--text-3);margin:-6px 0 12px;display:flex;gap:14px;flex-wrap:wrap;">
+          <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:1px;"></span>Below 60</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;background:#10b981;border-radius:1px;"></span>60+ hrs</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="monthlyChart" role="img" aria-label="Monthly flight hours bar chart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">ATP 61.159 checklist</div>
+        <div class="atp-list" id="atpList"></div>
+      </div>
+    </div>
+
+    <div class="section-hdr">Flight hour breakdown</div>
+    <div class="breakdown-grid" id="breakdownGrid"></div>
+
+    <div class="section-hdr">Pace & trends</div>
+    <div class="pace-row" id="paceRow"></div>
+
+    <div class="section-hdr">Hours by year</div>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="chart-wrap" style="height:150px;">
+        <canvas id="yearlyChart" role="img" aria-label="Yearly flight hours bar chart"></canvas>
+      </div>
+    </div>
+
+    <div class="section-hdr">Top aircraft</div>
+    <div class="card">
+      <table class="aircraft-table" id="aircraftTable">
+        <thead><tr><th>Aircraft</th><th style="text-align:right;width:80px;">Hours</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const CIRC = 2 * Math.PI * 55;
+
+function safeFloat(v) { const n = parseFloat((v||'').trim()); return isNaN(n) ? 0 : n; }
+function safeInt(v) { const n = parseInt((v||'').trim()); return isNaN(n) ? 0 : n; }
+function fmt(n, dec=1) { return Number(n).toLocaleString('en-US', {minimumFractionDigits:dec, maximumFractionDigits:dec}); }
+
+function parseCSV(text) {
+  function parseRows(str) {
+    const rows = [], TAB = '\t';
+    let cur = [], field = '', inQ = false;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      if (inQ) {
+        if (ch === '"') { if (str[i+1]==='"') { field+='"'; i++; } else inQ=false; }
+        else field += ch;
+      } else {
+        if (ch==='"') { inQ=true; }
+        else if (ch===TAB) { cur.push(field); field=''; }
+        else if (ch==='\n' || (ch==='\r' && str[i+1]==='\n')) {
+          if (ch==='\r') i++;
+          cur.push(field); field='';
+          if (cur.some(c=>c.trim())) rows.push(cur);
+          cur=[];
+        } else field+=ch;
+      }
+    }
+    if (field||cur.length) { cur.push(field); if (cur.some(c=>c.trim())) rows.push(cur); }
+    return rows;
+  }
+  const all = parseRows(text);
+  if (all.length < 2) return [];
+  const headers = all[0].map(h=>h.trim());
+  return all.slice(1).map(vals => {
+    const row = {};
+    headers.forEach((h,i) => { row[h] = (vals[i]||'').trim(); });
+    return row;
+  });
+}
+
+function computeStats(rows) {
+  const monthly={}, yearly={}, aircraft={};
+  let s = {
+    total:0, pic:0, night:0, actual_ifr:0, sim_ifr:0, xc:0,
+    solo:0, dual_given:0, dual_received:0, asel:0, amel:0,
+    day_land:0, night_land:0, pic_night:0, pic_xc:0
+  };
+
+  rows.forEach(row => {
+    const date=(row['flight_flightDate']||'').trim();
+    if (!date||date.length<7) return;
+    const tt=safeFloat(row['flight_totalTime']);
+    if (!tt) return;
+
+    const [yr,mo]=date.split('-');
+    const key=`${yr}-${mo}`;
+    monthly[key]=(monthly[key]||0)+tt;
+    yearly[yr]=(yearly[yr]||0)+tt;
+
+    const ftype=(row['flight_type']||'').trim();
+    const acClass=(row['aircraftType_selectedAircraftClass']||'').trim();
+    const isSim=ftype==='3';
+    const isMulti=acClass.includes('Multi');
+    const acID=(row['aircraft_aircraftID']||'').trim();
+
+    s.total+=tt;
+    s.pic+=safeFloat(row['flight_pic']);
+    s.night+=safeFloat(row['flight_night']);
+    s.actual_ifr+=safeFloat(row['flight_actualInstrument']);
+    s.sim_ifr+=safeFloat(row['flight_simulatedInstrument']);
+    s.xc+=safeFloat(row['flight_crossCountry']);
+    s.solo+=safeFloat(row['flight_solo']);
+    s.dual_given+=safeFloat(row['flight_dualGiven']);
+    s.dual_received+=safeFloat(row['flight_dualReceived']);
+    s.day_land+=safeInt(row['flight_dayLandings']);
+    s.night_land+=safeInt(row['flight_nightLandings']);
+    s.pic_night+=safeFloat(row['flight_picNight']);
+    s.pic_xc+=Math.min(safeFloat(row['flight_pic']), safeFloat(row['flight_crossCountry']));
+
+    if (!isSim) {
+      if (isMulti) s.amel+=tt; else s.asel+=tt;
+      if (acID) aircraft[acID]=(aircraft[acID]||0)+tt;
+    }
+  });
+
+  s.total_ifr=s.actual_ifr+s.sim_ifr;
+  const monthKeys=Object.keys(monthly).sort();
+  const monthVals=monthKeys.map(k=>monthly[k]);
+  const last12=monthVals.slice(-12);
+  const avg12=last12.length ? last12.reduce((a,b)=>a+b,0)/last12.length : 0;
+  const avgAll=monthVals.length ? monthVals.reduce((a,b)=>a+b,0)/monthVals.length : 0;
+  const bestVal=Math.max(...monthVals);
+  const bestKey=monthKeys[monthVals.indexOf(bestVal)];
+  const now=new Date();
+  const endOfYear=new Date(now.getFullYear(),11,31);
+  const monthsLeft=((endOfYear.getFullYear()-now.getFullYear())*12)+(endOfYear.getMonth()-now.getMonth())+1;
+  const projTotal=s.total+(avg12*(monthsLeft-0.5));
+
+  return {s, monthly, monthKeys, monthVals, yearly, aircraft, avg12, avgAll, bestVal, bestKey, monthsLeft, projTotal};
+}
+
+let monthlyChart=null, yearlyChart=null;
+
+function renderDashboard(stats) {
+  const {s, monthKeys, monthVals, yearly, aircraft, avg12, avgAll, bestVal, bestKey, monthsLeft, projTotal}=stats;
+
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('pdfBtn').classList.add('visible');
+
+  // Print header subtitle
+  const now = new Date();
+  document.getElementById('printHeaderSub').textContent =
+    `Generated ${now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${fmt(s.total)} total hours · ${Object.keys(yearly).length > 0 ? Math.min(...Object.keys(yearly)) + '–' + Math.max(...Object.keys(yearly)) : ''}`;
+
+  // Progress bar
+  const totalPct=Math.min(100,(s.total/1500)*100);
+  document.getElementById('bigProgressFill').style.width=totalPct.toFixed(1)+'%';
+  document.getElementById('bigProgressCurrent').textContent=fmt(s.total)+' hrs';
+  const toGo=Math.max(0,1500-s.total);
+  const etaM=avg12>0?Math.ceil(toGo/avg12):null;
+  document.getElementById('bigProgressSub').textContent=
+    toGo>0 ? `${fmt(toGo,1)} to go · ~${etaM} mo at current pace` : 'Total time requirement met!';
+
+  // Stats tiles
+  const tiles=[
+    {label:'Total time', val:fmt(s.total), sub:'hours', cls:'accent-blue'},
+    {label:'PIC', val:fmt(s.pic), sub:`${s.total?((s.pic/s.total)*100).toFixed(0):0}% of total`},
+    {label:'Dual given', val:fmt(s.dual_given), sub:`CFI hours`},
+    {label:'Night', val:fmt(s.night), sub:`${s.night_land} night ldgs`},
+    {label:'Instrument', val:fmt(s.total_ifr), sub:`${fmt(s.actual_ifr)} act · ${fmt(s.sim_ifr)} sim`},
+    {label:'XC', val:fmt(s.xc), sub:'cross-country'},
+    {label:'Landings', val:(s.day_land+s.night_land).toLocaleString(), sub:`${s.day_land}d · ${s.night_land}n`},
+    {label:'AMEL', val:fmt(s.amel), sub:'multi-engine'},
+  ];
+  document.getElementById('statsRow').innerHTML=tiles.map(t=>
+    `<div class="stat-tile ${t.cls||''}">
+      <div class="stat-label">${t.label}</div>
+      <div class="stat-val">${t.val}</div>
+      <div class="stat-sub">${t.sub}</div>
+    </div>`).join('');
+
+  // Gauges
+  function setGauge(fId,pId,dId,detId,have,need,color) {
+    const p=Math.min(100,(have/need)*100);
+    document.getElementById(fId).style.strokeDashoffset=CIRC*(1-p/100);
+    document.getElementById(fId).setAttribute('stroke',color);
+    document.getElementById(pId).style.color=color;
+    document.getElementById(pId).innerHTML=Math.round(p)+'<span class="gauge-pct-sign">%</span>';
+    document.getElementById(dId).textContent=fmt(have,1)+' hrs';
+    document.getElementById(detId).textContent=
+      have>=need ? `✓ ${fmt(have)} hrs · met` : `${fmt(need-have,1)} hrs to go`;
+  }
+  setGauge('gauge1Fill','gauge1Pct','gauge1Done','gauge1Detail',s.total,1500,'#3b82f6');
+  setGauge('gauge2Fill','gauge2Pct','gauge2Done','gauge2Detail',s.xc,500,'#f59e0b');
+
+  // ATP checklist
+  const reqs=[
+    {name:'Total flight time', have:s.total, need:1500, unit:'hrs'},
+    {name:'PIC time', have:s.pic, need:250, unit:'hrs'},
+    {name:'PIC cross-country', have:s.pic_xc, need:100, unit:'hrs'},
+    {name:'PIC night', have:s.pic_night, need:75, unit:'hrs'},
+    {name:'Total night', have:s.night, need:100, unit:'hrs'},
+    {name:'Instrument (act+sim)', have:s.total_ifr, need:50, unit:'hrs'},
+    {name:'Cross-country', have:s.xc, need:500, unit:'hrs'},
+    {name:'Night landings', have:s.night_land, need:20, unit:''},
+    {name:'Dual received', have:s.dual_received, need:25, unit:'hrs'},
+  ];
+  document.getElementById('atpList').innerHTML=reqs.map(r=>{
+    const p=Math.min(100,(r.have/r.need)*100), met=r.have>=r.need;
+    const fc=met?'#10b981':p>60?'#f59e0b':'#3b82f6';
+    const badge=met
+      ? '<span class="atp-badge met">✓ MET</span>'
+      : `<span class="atp-badge pending">${fmt(r.need-r.have,r.unit?1:0)} to go</span>`;
+    const haveStr=r.unit?fmt(r.have)+' '+r.unit:r.have.toLocaleString();
+    const needStr=r.unit?r.need+' '+r.unit:r.need;
+    return `<div class="atp-req">
+      <span class="atp-name">${r.name}</span>${badge}
+      <div class="atp-track-wrap">
+        <div class="atp-track"><div class="atp-fill" style="width:${p.toFixed(1)}%;background:${fc}"></div></div>
+        <div class="atp-nums">${haveStr} / ${needStr}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Monthly chart
+  const isMobile=window.innerWidth<600;
+  const mn=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const labels=monthKeys.map(k=>{
+    const [y,m]=k.split('-');
+    return mn[parseInt(m)]+(isMobile?'':` '${y.slice(2)}`);
+  });
+  const colors=monthVals.map(v=>v>=60?'#10b981':'#3b82f6');
+  if (monthlyChart) monthlyChart.destroy();
+  monthlyChart=new Chart(document.getElementById('monthlyChart'),{
+    type:'bar',
+    data:{labels, datasets:[
+      {data:monthVals, backgroundColor:colors, borderRadius:{topLeft:2,topRight:2}, borderSkipped:'bottom', categoryPercentage:0.9, barPercentage:0.9},
+      {type:'line', data:new Array(labels.length).fill(60), borderColor:'rgba(245,158,11,0.4)', borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===0?` ${ctx.parsed.y.toFixed(1)} hrs`:' 60 hr target'}}},
+      scales:{
+        x:{ticks:{color:'#475569',font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:isMobile?8:18},grid:{display:false},border:{color:'rgba(255,255,255,0.07)'}},
+        y:{ticks:{color:'#475569',font:{size:10},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.05)'},border:{display:false},min:0}
+      }
+    }
+  });
+
+  // Breakdown
+  const bd=[
+    {label:'ASEL',val:fmt(s.asel)+' hrs'},{label:'AMEL',val:fmt(s.amel)+' hrs'},
+    {label:'PIC',val:fmt(s.pic)+' hrs'},{label:'Dual given',val:fmt(s.dual_given)+' hrs'},
+    {label:'Dual received',val:fmt(s.dual_received)+' hrs'},{label:'Night',val:fmt(s.night)+' hrs'},
+    {label:'Cross-country',val:fmt(s.xc)+' hrs'},{label:'Actual IMC',val:fmt(s.actual_ifr)+' hrs'},
+    {label:'Sim IMC',val:fmt(s.sim_ifr)+' hrs'},{label:'Solo',val:fmt(s.solo)+' hrs'},
+    {label:'Day landings',val:s.day_land.toLocaleString()},{label:'Night landings',val:s.night_land.toLocaleString()},
+  ];
+  document.getElementById('breakdownGrid').innerHTML=bd.map(b=>
+    `<div class="breakdown-row"><span class="breakdown-label">${b.label}</span><span class="breakdown-val">${b.val}</span></div>`
+  ).join('');
+
+  // Pace
+  const m60=monthVals.filter(v=>v>=60).length;
+  const pace=[
+    {label:'Last 12-mo avg',val:fmt(avg12)+' /mo'},
+    {label:'All-time avg',val:fmt(avgAll)+' /mo'},
+    {label:'Best month',val:fmt(bestVal)+' hrs',sub:bestKey},
+    {label:'Months ≥ 60',val:m60+' months',sub:`${monthVals.length?((m60/monthVals.length)*100).toFixed(0):0}%`},
+    {label:'Projected total',val:projTotal>1500?'1,500+':fmt(projTotal)+' hrs',sub:'at current pace'},
+    {label:'Months left',val:monthsLeft,sub:'to Dec 31'},
+  ];
+  document.getElementById('paceRow').innerHTML=pace.map(d=>
+    `<div class="stat-tile">
+      <div class="stat-label">${d.label}</div>
+      <div class="stat-val" style="font-size:17px">${d.val}</div>
+      ${d.sub?`<div class="stat-sub">${d.sub}</div>`:''}
+    </div>`).join('');
+
+  // Yearly chart
+  const yrK=Object.keys(yearly).sort();
+  if (yearlyChart) yearlyChart.destroy();
+  yearlyChart=new Chart(document.getElementById('yearlyChart'),{
+    type:'bar',
+    data:{labels:yrK,datasets:[{data:yrK.map(k=>yearly[k]),backgroundColor:'#3b82f6',borderRadius:{topLeft:3,topRight:3},borderSkipped:'bottom',categoryPercentage:0.5}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y.toFixed(1)} hrs`}}},
+      scales:{
+        x:{ticks:{color:'#475569',font:{size:12}},grid:{display:false},border:{color:'rgba(255,255,255,0.07)'}},
+        y:{ticks:{color:'#475569',callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.05)'},border:{display:false},min:0}
+      }
+    }
+  });
+
+  // Aircraft table
+  const topAC=Object.entries(aircraft).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const maxAC=topAC[0]?.[1]||1;
+  document.getElementById('aircraftTable').querySelector('tbody').innerHTML=topAC.map(([id,hrs])=>
+    `<tr>
+      <td>${id}<span class="ac-bar" style="width:${Math.round(hrs/maxAC*60)}px"></span></td>
+      <td>${fmt(hrs)}</td>
+    </tr>`).join('');
+}
+
+function exportPDF() {
+  const now = new Date();
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  const yyyy = now.getFullYear();
+  document.title = `logbook_analysis_${mm}${dd}${yyyy}`;
+  window.print();
+  // Restore title after print dialog closes
+  setTimeout(() => { document.title = 'Logbook · ATP Dashboard'; }, 1000);
+}
+
+function handleFile(file) {
+  if (!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try {
+      const rows=parseCSV(e.target.result);
+      const stats=computeStats(rows);
+      renderDashboard(stats);
+      document.getElementById('uploadLabel').textContent=file.name.length>20?file.name.slice(0,18)+'…':file.name;
+    } catch(err) {
+      alert('Could not parse file. Make sure this is a LogTen "Export Flights (Tab)" export.\n\n'+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('fileInput').addEventListener('change',e=>handleFile(e.target.files[0]));
+
+const dropZone=document.getElementById('dropZone');
+['dragover','dragenter'].forEach(ev=>document.body.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.add('drag-over');}));
+['dragleave','dragend'].forEach(ev=>document.body.addEventListener(ev,()=>dropZone.classList.remove('drag-over')));
+document.body.addEventListener('drop',e=>{
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+// All data is processed in-memory only. Nothing is stored or transmitted.
+</script>
+</body>
+</html>
