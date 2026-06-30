@@ -101,6 +101,7 @@ body {
   @page { size: 8.5in 11in; margin: 0.5in 0.6in; }
 
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box !important; }
+
   .topbar, #emptyState, .topbar-actions { display: none !important; }
   #dashboard { display: block !important; }
 
@@ -108,94 +109,194 @@ body {
     background: #fff !important;
     color: #0f172a !important;
     font-size: 9px !important;
-    line-height: 1.35 !important;
+    line-height: 1.3 !important;
     -webkit-text-size-adjust: none !important;
   }
+
   .main { padding: 0 !important; max-width: 100% !important; width: 100% !important; }
 
   /* ── PRINT HEADER ── */
-  .print-header { display: block !important; margin-bottom: 8px !important; padding-bottom: 5px !important; border-bottom: 1.5px solid #0f172a !important; }
-  .print-header-title { font-size: 14px !important; font-weight: 700 !important; color: #0f172a !important; }
-  .print-header-sub { font-size: 9px !important; color: #64748b !important; margin-top: 1px !important; }
+  .print-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: baseline !important;
+    margin-bottom: 6px !important;
+    padding-bottom: 5px !important;
+    border-bottom: 1.5px solid #0f172a !important;
+  }
+  .print-header-title { font-size: 13px !important; font-weight: 700 !important; color: #0f172a !important; }
+  .print-header-sub { font-size: 8px !important; color: #64748b !important; margin-top: 0 !important; }
 
   /* ── PROGRESS BAR ── */
-  .big-progress { background: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 5px !important; padding: 7px 9px !important; margin-bottom: 6px !important; }
-  .bp-header { margin-bottom: 4px !important; flex-wrap: nowrap !important; }
+  .big-progress {
+    border: 1px solid #e2e8f0 !important;
+    background: #fff !important;
+    border-radius: 5px !important;
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+  }
+  .bp-header { margin-bottom: 4px !important; gap: 4px !important; flex-wrap: nowrap !important; }
   .bp-title { font-size: 9px !important; font-weight: 600 !important; color: #0f172a !important; }
   .bp-sub { font-size: 8px !important; color: #64748b !important; }
-  .bp-track { height: 6px !important; background: #e2e8f0 !important; margin-bottom: 3px !important; overflow: hidden !important; }
+  .bp-track { height: 6px !important; background: #e2e8f0 !important; border-radius: 3px !important; overflow: hidden !important; margin-bottom: 3px !important; }
+  .bp-fill { border-radius: 3px !important; }
   .bp-labels { font-size: 8px !important; color: #94a3b8 !important; }
   .bp-labels strong { color: #475569 !important; }
 
-  /* ── STATS — 8 across ── */
-  .stats-row { display: grid !important; grid-template-columns: repeat(8, 1fr) !important; gap: 4px !important; margin-bottom: 6px !important; }
-  .stat-tile { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 4px !important; padding: 5px 6px !important; }
-  .stat-label { font-size: 7px !important; color: #94a3b8 !important; letter-spacing: 0.04em !important; margin-bottom: 2px !important; text-transform: uppercase !important; }
-  .stat-val { font-size: 12px !important; font-weight: 700 !important; color: #0f172a !important; line-height: 1 !important; }
-  .stat-tile.accent-blue .stat-val { color: #2563eb !important; }
-  .stat-sub { font-size: 7px !important; color: #64748b !important; margin-top: 1px !important; }
-
-  /* ── GAUGES — horizontal pill layout ── */
-  .gauge-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; margin-bottom: 6px !important; }
-  .gauge-card {
-    background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 5px !important;
-    padding: 7px 10px !important; flex-direction: row !important; gap: 10px !important;
-    align-items: center !important; justify-content: flex-start !important;
+  /* ── STATS — 8 across, single row ── */
+  .stats-row {
+    display: grid !important;
+    grid-template-columns: repeat(8, 1fr) !important;
+    gap: 4px !important;
+    margin-bottom: 6px !important;
   }
-  .gauge-wrap { width: 64px !important; height: 64px !important; flex-shrink: 0 !important; }
-  .gauge-svg { width: 64px !important; height: 64px !important; }
-  .gauge-track { stroke: #e2e8f0 !important; stroke-width: 6 !important; }
-  .gauge-fill { stroke-width: 6 !important; }
-  .gauge-pct { font-size: 13px !important; font-weight: 700 !important; }
-  .gauge-pct-sign { font-size: 8px !important; }
-  .gauge-done { font-size: 7.5px !important; color: #94a3b8 !important; margin-top: 1px !important; }
-  .gauge-title { font-size: 9px !important; font-weight: 600 !important; color: #0f172a !important; text-align: left !important; }
-  .gauge-detail { font-size: 8px !important; color: #64748b !important; text-align: left !important; margin-top: 2px !important; line-height: 1.4 !important; }
+  .stat-tile {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 4px !important;
+    padding: 5px 6px !important;
+  }
+  .stat-label {
+    font-size: 6.5px !important;
+    color: #94a3b8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin-bottom: 2px !important;
+  }
+  .stat-val { font-size: 11px !important; font-weight: 700 !important; color: #0f172a !important; line-height: 1 !important; }
+  .stat-tile.accent-blue .stat-val { color: #2563eb !important; }
+  .stat-sub { font-size: 6.5px !important; color: #64748b !important; margin-top: 1px !important; }
 
-  /* ── MONTHLY CHART + ATP ── */
-  .grid-2 { display: grid !important; grid-template-columns: 1fr 210px !important; gap: 6px !important; margin-bottom: 6px !important; }
-  .card { background: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 5px !important; padding: 7px 9px !important; }
-  .card-title { font-size: 7px !important; color: #94a3b8 !important; margin-bottom: 5px !important; letter-spacing: 0.06em !important; }
-  .chart-wrap { height: 130px !important; }
+  /* ── GAUGES — horizontal pills, compact ── */
+  .gauge-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+  }
+  .gauge-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 5px !important;
+    padding: 8px 12px !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+  .gauge-wrap { width: 62px !important; height: 62px !important; flex-shrink: 0 !important; }
+  .gauge-svg { width: 62px !important; height: 62px !important; }
+  .gauge-track { stroke: #e2e8f0 !important; stroke-width: 5 !important; }
+  .gauge-fill { stroke-width: 5 !important; }
+  .gauge-center { /* text already absolutely centered in wrap */ }
+  .gauge-pct { font-size: 12px !important; font-weight: 700 !important; }
+  .gauge-pct-sign { font-size: 7px !important; }
+  .gauge-done { font-size: 7px !important; color: #94a3b8 !important; margin-top: 1px !important; }
+  .gauge-title { font-size: 9px !important; font-weight: 600 !important; color: #0f172a !important; text-align: left !important; margin-bottom: 2px !important; }
+  .gauge-detail { font-size: 7.5px !important; color: #64748b !important; text-align: left !important; line-height: 1.4 !important; }
+
+  /* ── MONTHLY CHART + ATP side by side ── */
+  .section-hdr {
+    font-size: 7px !important;
+    color: #94a3b8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+    font-weight: 600 !important;
+    margin: 7px 0 4px !important;
+    padding-bottom: 3px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    page-break-after: avoid !important;
+  }
+  .grid-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 200px !important;
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+  }
+  .card {
+    background: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 5px !important;
+    padding: 7px 9px !important;
+  }
+  .card-title {
+    font-size: 7px !important;
+    color: #94a3b8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+    font-weight: 600 !important;
+    margin-bottom: 5px !important;
+  }
+  /* hide legend in monthly chart - saves space */
+  .grid-2 .card > div[style*="font-size:10px"] { display: none !important; }
+  .chart-wrap { height: 138px !important; }
 
   /* ── ATP LIST ── */
-  .atp-list { gap: 5px !important; }
-  .atp-req { gap: 2px 5px !important; }
+  .atp-list { gap: 4px !important; }
+  .atp-req { gap: 1px 5px !important; }
   .atp-name { font-size: 8px !important; font-weight: 500 !important; color: #0f172a !important; }
-  .atp-badge { font-size: 7px !important; padding: 1px 5px !important; }
-  .atp-badge.met { background: #d1fae5 !important; color: #065f46 !important; border-color: #6ee7b7 !important; }
-  .atp-badge.pending { background: #dbeafe !important; color: #1e40af !important; border-color: #93c5fd !important; }
-  .atp-track { height: 3px !important; background: #e2e8f0 !important; }
-  .atp-nums { font-size: 7.5px !important; color: #94a3b8 !important; }
+  .atp-badge {
+    font-size: 7px !important;
+    padding: 1px 5px !important;
+    white-space: nowrap !important;
+    border-radius: 100px !important;
+  }
+  .atp-badge.met { background: #d1fae5 !important; color: #065f46 !important; border: 1px solid #6ee7b7 !important; }
+  .atp-badge.pending { background: #dbeafe !important; color: #1e40af !important; border: 1px solid #93c5fd !important; }
+  .atp-track-wrap { grid-column: 1 !important; }
+  .atp-track { height: 3px !important; background: #e2e8f0 !important; border-radius: 2px !important; margin-bottom: 1px !important; }
+  .atp-nums { font-size: 7px !important; color: #94a3b8 !important; }
 
-  /* ── SECTION HEADERS ── */
-  .section-hdr { font-size: 7px !important; color: #94a3b8 !important; margin: 7px 0 4px !important; padding-bottom: 3px !important; border-bottom: 1px solid #e2e8f0 !important; page-break-after: avoid !important; }
-
-  /* ── BREAKDOWN — 6 col ── */
-  .breakdown-grid { display: grid !important; grid-template-columns: repeat(6, 1fr) !important; gap: 4px !important; margin-bottom: 6px !important; }
-  .breakdown-row { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 4px !important; padding: 4px 6px !important; flex-direction: column !important; align-items: flex-start !important; gap: 1px !important; }
+  /* ── FLIGHT HOUR BREAKDOWN — 6 cols ── */
+  .breakdown-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 4px !important;
+    margin-bottom: 6px !important;
+  }
+  .breakdown-row {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 4px !important;
+    padding: 4px 6px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1px !important;
+  }
   .breakdown-label { font-size: 7px !important; color: #94a3b8 !important; }
   .breakdown-val { font-size: 9px !important; font-weight: 600 !important; color: #0f172a !important; }
 
-  /* ── PACE — 6 col ── */
-  .pace-row { display: grid !important; grid-template-columns: repeat(6, 1fr) !important; gap: 4px !important; margin-bottom: 6px !important; }
+  /* ── PACE — 6 cols ── */
+  .pace-row {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 4px !important;
+    margin-bottom: 6px !important;
+  }
+  .pace-row .stat-tile { padding: 5px 6px !important; }
+  .pace-row .stat-val { font-size: 10px !important; }
 
   /* ── YEARLY CHART ── */
-  .card + .card, .card[style] { margin-bottom: 6px !important; }
+  #yearlyCard { margin-bottom: 6px !important; }
+  #yearlyWrap { height: 80px !important; }
 
   /* ── AIRCRAFT TABLE ── */
   .aircraft-table { font-size: 8px !important; }
-  .aircraft-table th { font-size: 7px !important; padding-bottom: 4px !important; color: #94a3b8 !important; border-color: #e2e8f0 !important; }
+  .aircraft-table th { font-size: 7px !important; padding: 0 6px 4px !important; color: #94a3b8 !important; border-color: #e2e8f0 !important; }
   .aircraft-table td { padding: 3px 6px !important; color: #0f172a !important; border-color: #f1f5f9 !important; }
+  .ac-bar { display: none !important; }
 
-  /* ── PAGE BREAKS ── */
-  .gauge-row, .grid-2, .breakdown-grid { page-break-inside: avoid !important; }
-  .stats-row { page-break-inside: avoid !important; }
+  /* ── PAGE BREAK CONTROL ── */
+  .stats-row,
+  .gauge-row,
+  .grid-2,
+  .breakdown-grid,
+  .pace-row { page-break-inside: avoid !important; }
 }
 
 .print-header {
   display: none;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   border-bottom: 1.5px solid #0f172a;
   padding-bottom: 6px;
 }
@@ -569,8 +670,8 @@ body {
     <div class="pace-row" id="paceRow"></div>
 
     <div class="section-hdr">Hours by year</div>
-    <div class="card" style="margin-bottom:12px;">
-      <div class="chart-wrap" style="height:150px;">
+    <div class="card" id="yearlyCard" style="margin-bottom:12px;">
+      <div class="chart-wrap" id="yearlyWrap" style="height:150px;">
         <canvas id="yearlyChart" role="img" aria-label="Yearly flight hours bar chart"></canvas>
       </div>
     </div>
