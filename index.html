@@ -587,15 +587,17 @@ function renderCert(){
   document.getElementById('bpGoal').textContent=need+' hrs';
   const toGo=Math.max(0,need-have);
 
-  // required pace: target-date driven when the goal planner has a valid target date, else historical avg
+  // required pace: goal-planner target (hours + date) driven when set, else historical avg
   let threshRate=G.avg12||0;
   if(toGo<=0){
     document.getElementById('bpSub').textContent='Primary requirement met!';
-  }else if(G.targetDate){
+  }else if(G.targetDate&&G.targetHours){
     const monthsLeft=Math.max(0.01,(G.targetDate-new Date())/(1000*60*60*24*30.44));
-    threshRate=toGo/monthsLeft;
-    document.getElementById('bpSub').textContent=
-      `${fmt(toGo,1)} hrs to go · ${fmt(threshRate,1)} hrs/mo needed by ${G.targetDate.toLocaleDateString('en-US',{month:'short',year:'numeric'})}`;
+    const goalToGo=Math.max(0,G.targetHours-have);
+    threshRate=goalToGo/monthsLeft;
+    document.getElementById('bpSub').textContent=goalToGo>0
+      ?`${fmt(toGo,1)} hrs to go · ${fmt(threshRate,1)} hrs/mo needed for your ${fmt(G.targetHours,0)}-hr goal by ${G.targetDate.toLocaleDateString('en-US',{month:'short',year:'numeric'})}`
+      :`${fmt(toGo,1)} hrs to go · your ${fmt(G.targetHours,0)}-hr goal is already met`;
   }else{
     const eta=G.avg12>0?Math.ceil(toGo/G.avg12):null;
     document.getElementById('bpSub').textContent=eta
@@ -660,7 +662,7 @@ function calcGoalA(){
   const hadTarget=!!G.targetDate;
   if(!G.s||!hrs||!dateStr){
     vEl.textContent='—';lEl.textContent='Enter a target and date above';rA.className='goal-result';
-    G.targetDate=null;
+    G.targetDate=null;G.targetHours=null;
     if(hadTarget)renderCert();
     return;
   }
@@ -671,11 +673,11 @@ function calcGoalA(){
   const msLeft=target-now;
   if(msLeft<=0){
     vEl.textContent='—';lEl.textContent='Target date is in the past';rA.className='goal-result warn';
-    G.targetDate=null;
+    G.targetDate=null;G.targetHours=null;
     if(hadTarget)renderCert();
     return;
   }
-  G.targetDate=target;
+  G.targetDate=target;G.targetHours=hrs;
   const monthsLeft=msLeft/(1000*60*60*24*30.44);
   if(toGo===0){
     vEl.textContent='Done!';lEl.textContent=`You already have ${fmt(have)} hrs — goal met.`;rA.className='goal-result ok';
