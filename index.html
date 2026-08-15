@@ -87,6 +87,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 @media(min-width:900px){.grid2{grid-template-columns:1fr 320px}}
 .chart-wrap{position:relative;width:100%;height:200px}
 @media(min-width:600px){.chart-wrap{height:220px}}
+@media screen{
+  .grid2 .card{display:flex;flex-direction:column}
+  .grid2 .card .chart-wrap{flex:1;height:auto;min-height:200px}
+  @media(min-width:600px){.grid2 .card .chart-wrap{min-height:220px}}
+}
 
 /* CERT CHECKLIST */
 .cert-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
@@ -580,10 +585,22 @@ function renderCert(){
   document.getElementById('bpCur').textContent=fmt(have)+' hrs';
   document.getElementById('bpGoal').textContent=need+' hrs';
   const toGo=Math.max(0,need-have);
-  const eta=G.avg12>0?Math.ceil(toGo/G.avg12):null;
-  document.getElementById('bpSub').textContent=toGo>0
-    ?`${fmt(toGo,1)} hrs to go · ~${eta} mo at current pace`
-    :`Primary requirement met!`;
+
+  // required pace: target-date driven when the goal planner has a valid target date, else historical avg
+  let threshRate=G.avg12||0;
+  if(toGo<=0){
+    document.getElementById('bpSub').textContent='Primary requirement met!';
+  }else if(G.targetDate){
+    const monthsLeft=Math.max(0.01,(G.targetDate-new Date())/(1000*60*60*24*30.44));
+    threshRate=toGo/monthsLeft;
+    document.getElementById('bpSub').textContent=
+      `${fmt(toGo,1)} hrs to go · ${fmt(threshRate,1)} hrs/mo needed by ${G.targetDate.toLocaleDateString('en-US',{month:'short',year:'numeric'})}`;
+  }else{
+    const eta=G.avg12>0?Math.ceil(toGo/G.avg12):null;
+    document.getElementById('bpSub').textContent=eta
+      ?`${fmt(toGo,1)} hrs to go · ~${eta} mo at current pace`
+      :`${fmt(toGo,1)} hrs to go`;
+  }
 
   // req list
   let metCount=0;
@@ -618,14 +635,17 @@ function renderCert(){
   ov.textContent=allMet?'All requirements met':`${metCount}/${autoReqs.length} met`;
   ov.className='cert-overall '+(allMet?'all-met':'not-met');
 
-  // update monthly chart threshold line
+  // update monthly chart threshold line (target-date pace when set, else historical avg)
   if(G.monthlyChart){
-    const pace=G.avg12;
-    G.monthlyChart.data.datasets[1].data=new Array(G.mKeys.length).fill(pace>0?Math.round(pace):60);
-    G.monthlyChart.update('none');
+    const pace=threshRate;
+    G.monthlyChart.data.datasets[1].data=new Array(G.mKeys.length).fill(pace>0?Math.round(pace*10)/10:60);
     const colors=G.mVals.map(v=>v>=(pace||60)?'#10b981':'#3b82f6');
     G.monthlyChart.data.datasets[0].backgroundColor=colors;
     G.monthlyChart.update('none');
+    // explicit resize as a safety net in case the card's flex-driven height
+    // change (from the req-list re-render above) hasn't been picked up yet
+    // by the canvas's ResizeObserver in this browser
+    G.monthlyChart.resize();
   }
 }
 
@@ -636,21 +656,38 @@ function calcGoalA(){
   const rA=document.getElementById('goalResultA');
   const vEl=document.getElementById('goalResAVal');
   const lEl=document.getElementById('goalResALbl');
-  if(!G.s||!hrs||!dateStr){vEl.textContent='—';lEl.textContent='Enter a target and date above';rA.className='goal-result';return;}
+  const hadTarget=!!G.targetDate;
+  if(!G.s||!hrs||!dateStr){
+    vEl.textContent='—';lEl.textContent='Enter a target and date above';rA.className='goal-result';
+    G.targetDate=null;
+    if(hadTarget)renderCert();
+    return;
+  }
   const have=G.s.total;
   const toGo=Math.max(0,hrs-have);
   const now=new Date();
   const target=new Date(dateStr+'T12:00:00');
   const msLeft=target-now;
-  if(msLeft<=0){vEl.textContent='—';lEl.textContent='Target date is in the past';rA.className='goal-result warn';return;}
+  if(msLeft<=0){
+    vEl.textContent='—';lEl.textContent='Target date is in the past';rA.className='goal-result warn';
+    G.targetDate=null;
+    if(hadTarget)renderCert();
+    return;
+  }
+  G.targetDate=target;
   const monthsLeft=msLeft/(1000*60*60*24*30.44);
-  if(toGo===0){vEl.textContent='Done!';lEl.textContent=`You already have ${fmt(have)} hrs — goal met.`;rA.className='goal-result ok';return;}
+  if(toGo===0){
+    vEl.textContent='Done!';lEl.textContent=`You already have ${fmt(have)} hrs — goal met.`;rA.className='goal-result ok';
+    renderCert();
+    return;
+  }
   const rate=toGo/monthsLeft;
   vEl.textContent=fmt(rate)+' hrs/mo';
   const diff=rate-(G.avg12||0);
   const paceNote=G.avg12>0?(diff>0?` (+${fmt(diff,1)} above your ${fmt(G.avg12)} avg)`:` (${fmt(Math.abs(diff),1)} below your ${fmt(G.avg12)} avg)`):' ';
   lEl.textContent=`Required monthly rate to reach ${fmt(hrs,0)} hrs by ${target.toLocaleDateString('en-US',{month:'long',year:'numeric'})}${paceNote}`;
   rA.className='goal-result '+(rate<=(G.avg12||rate)?'ok':'warn');
+  renderCert();
 }
 
 function calcGoalB(){
@@ -718,7 +755,7 @@ function renderDashboard(stats){
       {type:'line',data:new Array(labels.length).fill(avg12||60),borderColor:'rgba(245,158,11,.5)',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.datasetIndex===0?` ${c.parsed.y.toFixed(1)} hrs`:' avg pace'}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.datasetIndex===0?` ${c.parsed.y.toFixed(1)} hrs`:(G.targetDate?' target pace':' avg pace')}}},
       scales:{
         x:{ticks:{color:'#475569',font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:isMob?8:18},grid:{display:false},border:{color:'rgba(255,255,255,.07)'}},
         y:{ticks:{color:'#475569',font:{size:10},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,.05)'},border:{display:false},min:0}
@@ -781,8 +818,12 @@ function renderDashboard(stats){
   if(!document.getElementById('goalHours').value){
     document.getElementById('goalHours').value=1500;
     document.getElementById('goalHoursB').value=1500;
-    calcGoalA();calcGoalB();
   }
+  if(!document.getElementById('goalDate').value){
+    document.getElementById('goalDate').value='2026-12-31';
+  }
+  // re-sync (also keeps chart threshold/progress bar in sync with any target date on re-upload)
+  calcGoalA();calcGoalB();
 }
 
 // ── PDF EXPORT ─────────────────────────────────────────────────
