@@ -311,6 +311,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <div class="chart-legend" style="font-size:10px;color:var(--t3);margin:-6px 0 12px;display:flex;gap:14px;flex-wrap:wrap;">
           <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:1px;"></span>Below target</span>
           <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;background:#10b981;border-radius:1px;"></span>At/above target</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:14px;height:0;border-top:1.5px dashed #f59e0b;"></span><span id="paceLegendLbl">Avg pace</span></span>
         </div>
         <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
       </div>
@@ -591,18 +592,25 @@ function renderCert(){
   let threshRate=G.avg12||0;
   if(toGo<=0){
     document.getElementById('bpSub').textContent='Primary requirement met!';
-  }else if(G.targetDate&&G.targetHours){
-    const monthsLeft=Math.max(0.01,(G.targetDate-new Date())/(1000*60*60*24*30.44));
-    const goalToGo=Math.max(0,G.targetHours-have);
-    threshRate=goalToGo/monthsLeft;
-    document.getElementById('bpSub').textContent=goalToGo>0
-      ?`${fmt(toGo,1)} hrs to go · ${fmt(threshRate,1)} hrs/mo needed for your ${fmt(G.targetHours,0)}-hr goal by ${G.targetDate.toLocaleDateString('en-US',{month:'short',year:'numeric'})}`
-      :`${fmt(toGo,1)} hrs to go · your ${fmt(G.targetHours,0)}-hr goal is already met`;
   }else{
-    const eta=G.avg12>0?Math.ceil(toGo/G.avg12):null;
-    document.getElementById('bpSub').textContent=eta
-      ?`${fmt(toGo,1)} hrs to go · ~${eta} mo at current pace`
-      :`${fmt(toGo,1)} hrs to go`;
+    let goalPart;
+    if(G.targetDate&&G.targetHours){
+      const monthsLeft=Math.max(0.01,(G.targetDate-new Date())/(1000*60*60*24*30.44));
+      const goalToGo=Math.max(0,G.targetHours-have);
+      threshRate=goalToGo/monthsLeft;
+      goalPart=goalToGo>0
+        ?`${fmt(threshRate,1)} hrs/mo needed for your ${fmt(G.targetHours,0)}-hr goal by ${G.targetDate.toLocaleDateString('en-US',{month:'short',year:'numeric'})}`
+        :`your ${fmt(G.targetHours,0)}-hr goal is already met`;
+    }
+    // current pace + estimated completion date at that pace (always shown)
+    let ratePart;
+    if(G.avg12>0){
+      const estDate=new Date();
+      estDate.setDate(estDate.getDate()+Math.round((toGo/G.avg12)*30.44));
+      ratePart=`currently ${fmt(G.avg12,1)} hrs/mo · est. completion ${fmtDate(estDate)}`;
+    }
+    document.getElementById('bpSub').textContent=
+      `${fmt(toGo,1)} hrs to go`+(goalPart?` · ${goalPart}`:'')+(ratePart?` · ${ratePart}`:'');
   }
 
   // req list
@@ -639,6 +647,8 @@ function renderCert(){
   ov.className='cert-overall '+(allMet?'all-met':'not-met');
 
   // update monthly chart threshold line (target-date pace when set, else historical avg)
+  const paceLegendLbl=document.getElementById('paceLegendLbl');
+  if(paceLegendLbl)paceLegendLbl.textContent=(G.targetDate&&G.targetHours&&toGo>0)?'Target pace':'Avg pace';
   if(G.monthlyChart){
     const pace=threshRate;
     G.monthlyChart.data.datasets[1].data=new Array(G.mKeys.length).fill(pace>0?Math.round(pace*10)/10:60);
@@ -817,15 +827,13 @@ function renderDashboard(stats){
     `<tr><td>${id}<span class="ac-bar" style="width:${Math.round(h/maxAC*60)}px"></span></td><td>${fmt(h)}</td></tr>`
   ).join('');
 
-  // pre-fill goal planners with ATP target
-  if(!document.getElementById('goalHours').value){
-    document.getElementById('goalHours').value=1500;
-    document.getElementById('goalHoursB').value=1500;
-  }
-  if(!document.getElementById('goalDate').value){
-    document.getElementById('goalDate').value='2026-12-31';
-  }
-  // re-sync (also keeps chart threshold/progress bar in sync with any target date on re-upload)
+  // reset goal planner to freshly-calculated defaults on every upload: target hours
+  // = selected cert's primary requirement, target date = default target date. This
+  // avoids the pace line silently carrying over a stale target from a prior upload.
+  const primaryNeed=CERTS[document.getElementById('certSelect').value].reqs[0].need;
+  document.getElementById('goalHours').value=primaryNeed;
+  document.getElementById('goalHoursB').value=primaryNeed;
+  document.getElementById('goalDate').value='2026-12-31';
   calcGoalA();calcGoalB();
 }
 
