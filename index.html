@@ -31,7 +31,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .tbtn.visible{display:flex}
 .btxt{display:none}
 @media(min-width:500px){.btxt{display:inline}}
-#fileInput{display:none}
+#fileInput,#scheduleInput{display:none}
 
 /* EMPTY STATE */
 #emptyState{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px);text-align:center;padding:24px 16px;gap:16px}
@@ -103,11 +103,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .cert-overall.all-met{color:var(--green)}
 .cert-overall.not-met{color:var(--accent)}
 .req-list{display:flex;flex-direction:column;gap:11px}
-.req{display:grid;grid-template-columns:1fr auto;gap:3px 8px;align-items:center}
+.req{display:grid;grid-template-columns:1fr auto auto;gap:3px 8px;align-items:center}
 .req-name{font-size:12px;color:var(--text);font-weight:500;grid-column:1}
 .req-badge{grid-column:2;grid-row:1/3;align-self:center;font-size:10px;font-weight:700;padding:3px 7px;border-radius:100px;white-space:nowrap}
 .req-badge.met{background:var(--gg);color:var(--green);border:1px solid rgba(16,185,129,.25)}
 .req-badge.pend{background:var(--ag);color:var(--accent);border:1px solid rgba(59,130,246,.25)}
+.req-met-date{grid-column:3;grid-row:1/3;align-self:center;font-size:10px;color:var(--t2);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
 .req-track-wrap{grid-column:1}
 .req-track{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-bottom:2px}
 .req-fill{height:100%;border-radius:2px;transition:width .6s ease}
@@ -214,6 +215,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   .req-badge{font-size:7px!important;padding:1px 5px!important;white-space:nowrap!important;border-radius:100px!important}
   .req-badge.met{background:#d1fae5!important;color:#065f46!important;border:1px solid #6ee7b7!important}
   .req-badge.pend{background:#dbeafe!important;color:#1e40af!important;border:1px solid #93c5fd!important}
+  .req-met-date{font-size:7px!important;color:#94a3b8!important}
   .req-track{height:3px!important;background:#e2e8f0!important;border-radius:2px!important;margin-bottom:1px!important}
   .req-nums{font-size:7px!important;color:#94a3b8!important}
   .breakdown{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:4px!important;margin-bottom:6px!important}
@@ -368,6 +370,22 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
             <div class="goal-result-lbl" id="goalResBLbl">Enter a target and monthly rate above</div>
           </div>
         </div>
+        <!-- Mode C: work schedule → required hours per working day -->
+        <div class="goal-section" style="grid-column:1/-1">
+          <div class="goal-section-title">Work schedule → hours needed per working day</div>
+          <div class="goal-row">
+            <label class="tbtn" for="scheduleInput" style="padding:6px 10px;font-size:12px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+              <span>Upload work schedule (.ics)</span>
+            </label>
+            <input type="file" id="scheduleInput" accept=".ics">
+            <span class="goal-lbl" id="scheduleStatus" style="width:auto;">No schedule loaded</span>
+          </div>
+          <div class="goal-result" id="goalResultC">
+            <div class="goal-result-val" id="goalResCVal">—</div>
+            <div class="goal-result-lbl" id="goalResCLbl">Upload a work schedule (.ics) to see hours needed per working day, based on the target above</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -400,6 +418,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 <script>
 const CIRC = 2*Math.PI*55;
 let G = {}; // global stats
+let WORKSCHED = null; // {offDates:Set<'YYYY-MM-DD'>, name}
 
 // ── CERT REQUIREMENTS ──────────────────────────────────────────
 const CERTS = {
@@ -516,10 +535,24 @@ function computeStats(rows){
          dual_given:0,dual_rx:0,asel:0,amel:0,day_land:0,night_land:0,
          pic_night:0,pic_xc:0,total_ifr:0};
 
-  rows.forEach(row=>{
+  // sort chronologically so cumulative running totals (used to find the date
+  // each certificate requirement was first met) accumulate in flight order,
+  // regardless of the row order in the source CSV
+  const dated=rows.map(row=>{
     const date=(row['flight_flightDate']||'').trim();
-    if(!date||date.length<7)return;
-    const tt=sf(row['flight_totalTime']);if(!tt)return;
+    if(!date||date.length<7)return null;
+    const tt=sf(row['flight_totalTime']);if(!tt)return null;
+    return{date,row};
+  }).filter(Boolean).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+
+  const cum={total:0,pic:0,night:0,actual_ifr:0,sim_ifr:0,total_ifr:0,xc:0,solo:0,
+         dual_given:0,dual_rx:0,night_land:0,pic_night:0,pic_xc:0};
+  const cumKeys=Object.keys(cum);
+  const cumSeries={};
+  cumKeys.forEach(k=>cumSeries[k]=[]);
+
+  dated.forEach(({date,row})=>{
+    const tt=sf(row['flight_totalTime']);
     const[yr,mo]=date.split('-');
     const key=`${yr}-${mo}`;
     monthly[key]=(monthly[key]||0)+tt;
@@ -529,14 +562,29 @@ function computeStats(rows){
     const isSim=ftype==='3';
     const isMulti=acClass.includes('Multi');
     const acID=(row['aircraft_aircraftID']||'').trim();
-    s.total+=tt;s.pic+=sf(row['flight_pic']);s.night+=sf(row['flight_night']);
+    const dPic=sf(row['flight_pic']);
+    const dXc=sf(row['flight_crossCountry']);
+    const dPicXc=Math.min(dPic,dXc);
+    s.total+=tt;s.pic+=dPic;s.night+=sf(row['flight_night']);
     s.actual_ifr+=sf(row['flight_actualInstrument']);s.sim_ifr+=sf(row['flight_simulatedInstrument']);
-    s.xc+=sf(row['flight_crossCountry']);s.solo+=sf(row['flight_solo']);
+    s.xc+=dXc;s.solo+=sf(row['flight_solo']);
     s.dual_given+=sf(row['flight_dualGiven']);s.dual_rx+=sf(row['flight_dualReceived']);
     s.day_land+=si(row['flight_dayLandings']);s.night_land+=si(row['flight_nightLandings']);
     s.pic_night+=sf(row['flight_picNight']);
-    s.pic_xc+=Math.min(sf(row['flight_pic']),sf(row['flight_crossCountry']));
+    s.pic_xc+=dPicXc;
     if(!isSim){if(isMulti)s.amel+=tt;else s.asel+=tt;if(acID)aircraft[acID]=(aircraft[acID]||0)+tt;}
+
+    cum.total+=tt;cum.pic+=dPic;cum.night+=sf(row['flight_night']);
+    cum.actual_ifr+=sf(row['flight_actualInstrument']);cum.sim_ifr+=sf(row['flight_simulatedInstrument']);
+    cum.total_ifr=cum.actual_ifr+cum.sim_ifr;
+    cum.xc+=dXc;cum.solo+=sf(row['flight_solo']);
+    cum.dual_given+=sf(row['flight_dualGiven']);cum.dual_rx+=sf(row['flight_dualReceived']);
+    cum.night_land+=si(row['flight_nightLandings']);cum.pic_night+=sf(row['flight_picNight']);
+    cum.pic_xc+=dPicXc;
+    cumKeys.forEach(k=>{
+      const arr=cumSeries[k];
+      if(!arr.length||arr[arr.length-1].value!==cum[k])arr.push({date,value:cum[k]});
+    });
   });
 
   s.total_ifr=s.actual_ifr+s.sim_ifr;
@@ -550,7 +598,21 @@ function computeStats(rows){
   const now=new Date();
   const eoy=new Date(now.getFullYear(),11,31);
   const mLeft=((eoy.getFullYear()-now.getFullYear())*12)+(eoy.getMonth()-now.getMonth())+1;
-  return{s,monthly,mKeys,mVals,yearly,aircraft,avg12,avgAll,bestVal,bestKey,mLeft};
+  return{s,monthly,mKeys,mVals,yearly,aircraft,avg12,avgAll,bestVal,bestKey,mLeft,cumSeries};
+}
+
+// find the date a cumulative requirement value was first reached
+function dateMet(key,need){
+  const arr=G.cumSeries&&G.cumSeries[key];
+  if(!arr)return null;
+  for(const pt of arr){if(pt.value>=need)return pt.date;}
+  return null;
+}
+function fmtMetDate(dstr){
+  const iso=dstr.length===7?dstr+'-01':dstr;
+  const dt=new Date(iso+'T12:00:00');
+  if(isNaN(dt))return '';
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
 
 // ── GAUGE HELPER ───────────────────────────────────────────────
@@ -632,7 +694,12 @@ function renderCert(){
     const needStr=r.unit?r.need+' '+r.unit:r.need;
     const badge=met?'<span class="req-badge met">✓ MET</span>'
       :`<span class="req-badge pend">${fmt(r.need-have,r.unit?1:0)} to go</span>`;
-    return `<div class="req"><span class="req-name">${r.name}</span>${badge}
+    let dateCol='';
+    if(met){
+      const d=dateMet(r.key,r.need);
+      if(d)dateCol=`<span class="req-met-date">${fmtMetDate(d)}</span>`;
+    }
+    return `<div class="req"><span class="req-name">${r.name}</span>${badge}${dateCol}
       <div class="req-track-wrap">
         <div class="req-track"><div class="req-fill" style="width:${p.toFixed(1)}%;background:${fc}"></div></div>
         <div class="req-nums">${haveStr} / ${needStr}</div>
@@ -674,6 +741,7 @@ function calcGoalA(){
     vEl.textContent='—';lEl.textContent='Enter a target and date above';rA.className='goal-result';
     G.targetDate=null;G.targetHours=null;
     if(hadTarget)renderCert();
+    calcWorkSchedule();
     return;
   }
   const have=G.s.total;
@@ -685,6 +753,7 @@ function calcGoalA(){
     vEl.textContent='—';lEl.textContent='Target date is in the past';rA.className='goal-result warn';
     G.targetDate=null;G.targetHours=null;
     if(hadTarget)renderCert();
+    calcWorkSchedule();
     return;
   }
   G.targetDate=target;G.targetHours=hrs;
@@ -692,6 +761,7 @@ function calcGoalA(){
   if(toGo===0){
     vEl.textContent='Done!';lEl.textContent=`You already have ${fmt(have)} hrs — goal met.`;rA.className='goal-result ok';
     renderCert();
+    calcWorkSchedule();
     return;
   }
   const rate=toGo/monthsLeft;
@@ -701,6 +771,7 @@ function calcGoalA(){
   lEl.textContent=`Required monthly rate to reach ${fmt(hrs,0)} hrs by ${target.toLocaleDateString('en-US',{month:'long',year:'numeric'})}${paceNote}`;
   rA.className='goal-result '+(rate<=(G.avg12||rate)?'ok':'warn');
   renderCert();
+  calcWorkSchedule();
 }
 
 function calcGoalB(){
@@ -721,6 +792,98 @@ function calcGoalB(){
   const paceNote=G.avg12>0?(diff>=0?` (pace is +${fmt(diff,1)} above your ${fmt(G.avg12)} avg)`:` (pace is ${fmt(Math.abs(diff),1)} below your ${fmt(G.avg12)} avg)`):' ';
   lEl.textContent=`Estimated completion date for ${fmt(hrs,0)} hrs at ${fmt(rate)} hrs/mo${paceNote}`;
   rB.className='goal-result '+(rate>=(G.avg12||rate)?'ok':'warn');
+}
+
+// ── WORK SCHEDULE ──────────────────────────────────────────────
+// parses an .ics calendar export, expanding all-day "Day Off"-style events
+// into a set of ISO dates ('YYYY-MM-DD') the pilot is not working
+function parseICSOffDates(text){
+  const off=new Set();
+  const veventRe=/BEGIN:VEVENT([\s\S]*?)END:VEVENT/g;
+  let m;
+  while((m=veventRe.exec(text))){
+    const block=m[1];
+    const summaryM=block.match(/SUMMARY:(.*)/);
+    const summary=summaryM?summaryM[1].trim():'';
+    if(summary&&!/day off|pto|vacation|leave/i.test(summary))continue;
+    const startM=block.match(/DTSTART[^:]*:(\d{8})/);
+    if(!startM)continue;
+    const endM=block.match(/DTEND[^:]*:(\d{8})/);
+    const s=startM[1],e=endM?endM[1]:startM[1];
+    const startDate=new Date(+s.slice(0,4),+s.slice(4,6)-1,+s.slice(6,8));
+    let endDate=new Date(+e.slice(0,4),+e.slice(4,6)-1,+e.slice(6,8));
+    if(endDate<=startDate)endDate=new Date(startDate.getFullYear(),startDate.getMonth(),startDate.getDate()+1);
+    for(let d=new Date(startDate);d<endDate;d.setDate(d.getDate()+1)){
+      off.add(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+    }
+  }
+  return off;
+}
+
+function calcWorkSchedule(){
+  const vEl=document.getElementById('goalResCVal');
+  const lEl=document.getElementById('goalResCLbl');
+  const rC=document.getElementById('goalResultC');
+  if(!WORKSCHED){
+    vEl.textContent='—';
+    lEl.textContent='Upload a work schedule (.ics) to see hours needed per working day, based on the target above';
+    rC.className='goal-result';
+    return;
+  }
+  if(!G.s||!G.targetDate||!G.targetHours){
+    vEl.textContent='—';
+    lEl.textContent='Set a target hours and date above to see hours needed per working day';
+    rC.className='goal-result';
+    return;
+  }
+  const have=G.s.total;
+  const toGo=Math.max(0,G.targetHours-have);
+  if(toGo===0){
+    vEl.textContent='Done!';lEl.textContent=`You already have ${fmt(have)} hrs — goal met.`;rC.className='goal-result ok';
+    return;
+  }
+  const today=new Date();today.setHours(0,0,0,0);
+  const target=new Date(G.targetDate);target.setHours(0,0,0,0);
+  if(target<today){
+    vEl.textContent='—';lEl.textContent='Target date is in the past';rC.className='goal-result warn';
+    return;
+  }
+  let workingDays=0,offDays=0;
+  for(let d=new Date(today);d<=target;d.setDate(d.getDate()+1)){
+    const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(WORKSCHED.offDates.has(iso))offDays++;else workingDays++;
+  }
+  if(workingDays===0){
+    vEl.textContent='—';lEl.textContent='No working days remain between today and your target date';rC.className='goal-result warn';
+    return;
+  }
+  const perDay=toGo/workingDays;
+  vEl.textContent=fmt(perDay,2)+' hrs/working day';
+  lEl.textContent=`${fmt(toGo,1)} hrs to go over ${workingDays} working day${workingDays===1?'':'s'} `+
+    `(${offDays} day${offDays===1?'':'s'} off) between now and ${target.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+  rC.className='goal-result '+(perDay<=4?'ok':'warn');
+}
+
+function handleSchedule(file){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const off=parseICSOffDates(e.target.result);
+      if(!off.size){
+        alert('No "Day Off" events found in this calendar file.');
+        return;
+      }
+      WORKSCHED={offDates:off,name:file.name};
+      const n=file.name;
+      document.getElementById('scheduleStatus').textContent=
+        `${n.length>28?n.slice(0,26)+'…':n} · ${off.size} day${off.size===1?'':'s'} off loaded`;
+      calcWorkSchedule();
+    }catch(err){
+      alert('Could not parse this calendar file. Expected an .ics export with "Day Off" events.\n\n'+err.message);
+    }
+  };
+  r.readAsText(file);
 }
 
 // ── RENDER DASHBOARD ───────────────────────────────────────────
@@ -867,6 +1030,7 @@ function handleFile(file){
 }
 
 document.getElementById('fileInput').addEventListener('change',e=>handleFile(e.target.files[0]));
+document.getElementById('scheduleInput').addEventListener('change',e=>handleSchedule(e.target.files[0]));
 const dz=document.getElementById('dropZone');
 ['dragover','dragenter'].forEach(ev=>document.body.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag-over');}));
 ['dragleave','dragend'].forEach(ev=>document.body.addEventListener(ev,()=>dz.classList.remove('drag-over')));
