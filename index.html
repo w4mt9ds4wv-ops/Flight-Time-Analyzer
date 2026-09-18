@@ -379,11 +379,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
               <span>Upload work schedule (.ics)</span>
             </label>
             <input type="file" id="scheduleInput" accept=".ics">
-            <span class="goal-lbl" id="scheduleStatus" style="width:auto;">No schedule loaded</span>
+            <span class="goal-lbl" id="scheduleStatus" style="width:auto;">2026 Work Schedule (default) · 127 days off loaded</span>
           </div>
           <div class="goal-result" id="goalResultC">
             <div class="goal-result-val" id="goalResCVal">—</div>
-            <div class="goal-result-lbl" id="goalResCLbl">Upload a work schedule (.ics) to see hours needed per working day, based on the target above</div>
+            <div class="goal-result-lbl" id="goalResCLbl">Set a target hours and date above to see hours needed per working day</div>
           </div>
         </div>
       </div>
@@ -418,7 +418,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 <script>
 const CIRC = 2*Math.PI*55;
 let G = {}; // global stats
-let WORKSCHED = null; // {offDates:Set<'YYYY-MM-DD'>, name}
+
+// baked-in default work schedule (2026 days off) — upload a different .ics to override
+const DEFAULT_WORK_OFF_DATES=['2026-01-01','2026-01-02','2026-01-06','2026-01-07','2026-01-12','2026-01-17','2026-01-18','2026-01-22','2026-01-23','2026-01-27','2026-01-28','2026-02-02','2026-02-07','2026-02-08','2026-02-12','2026-02-13','2026-02-17','2026-02-18','2026-02-23','2026-02-28','2026-03-01','2026-03-05','2026-03-06','2026-03-10','2026-03-11','2026-03-16','2026-03-21','2026-03-22','2026-03-26','2026-03-27','2026-03-31','2026-04-01','2026-04-06','2026-04-11','2026-04-12','2026-04-16','2026-04-17','2026-04-21','2026-04-22','2026-04-27','2026-05-02','2026-05-03','2026-05-07','2026-05-08','2026-05-12','2026-05-13','2026-05-18','2026-05-23','2026-05-24','2026-05-25','2026-05-28','2026-05-29','2026-06-02','2026-06-03','2026-06-08','2026-06-13','2026-06-14','2026-06-18','2026-06-19','2026-06-23','2026-06-24','2026-06-29','2026-07-04','2026-07-05','2026-07-09','2026-07-10','2026-07-14','2026-07-15','2026-07-20','2026-07-25','2026-07-26','2026-07-30','2026-07-31','2026-08-04','2026-08-05','2026-08-10','2026-08-15','2026-08-16','2026-08-20','2026-08-21','2026-08-25','2026-08-26','2026-08-31','2026-09-05','2026-09-06','2026-09-07','2026-09-10','2026-09-11','2026-09-15','2026-09-16','2026-09-21','2026-09-26','2026-09-27','2026-10-01','2026-10-02','2026-10-06','2026-10-07','2026-10-12','2026-10-17','2026-10-18','2026-10-22','2026-10-23','2026-10-27','2026-10-28','2026-11-02','2026-11-07','2026-11-08','2026-11-12','2026-11-13','2026-11-17','2026-11-18','2026-11-23','2026-11-26','2026-11-27','2026-11-28','2026-11-29','2026-12-03','2026-12-04','2026-12-08','2026-12-09','2026-12-14','2026-12-19','2026-12-20','2026-12-24','2026-12-25','2026-12-29','2026-12-30'];
+let WORKSCHED={offDates:new Set(DEFAULT_WORK_OFF_DATES),name:'2026 Work Schedule (default)'}; // {offDates:Set<'YYYY-MM-DD'>, name}
 
 // ── CERT REQUIREMENTS ──────────────────────────────────────────
 const CERTS = {
@@ -996,7 +999,7 @@ function renderDashboard(stats){
   const primaryNeed=CERTS[document.getElementById('certSelect').value].reqs[0].need;
   document.getElementById('goalHours').value=primaryNeed;
   document.getElementById('goalHoursB').value=primaryNeed;
-  document.getElementById('goalDate').value='2026-12-31';
+  document.getElementById('goalDate').value='2026-12-01';
   calcGoalA();calcGoalB();
 }
 
