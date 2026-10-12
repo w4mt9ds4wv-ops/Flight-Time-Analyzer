@@ -13,7 +13,7 @@
   --accent:#3b82f6;--ag:rgba(59,130,246,.15);
   --green:#10b981;--gg:rgba(16,185,129,.12);
   --amber:#f59e0b;--red:#ef4444;
-  --text:#e2e8f0;--t2:#94a3b8;--t3:#475569;
+  --text:#e2e8f0;--t2:#94a3b8;--t3:#6b7a93;
   --border:rgba(255,255,255,.07);--b2:rgba(255,255,255,.12);
   --r:10px;--rl:14px;
 }
@@ -42,90 +42,133 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .empty-sub{font-size:13px;color:var(--t2);line-height:1.6}
 .empty-tag{display:inline-block;background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:2px 8px;font-size:11px;font-family:monospace;color:var(--accent);margin-top:12px}
 
-/* DASHBOARD */
+/* DASHBOARD LAYOUT */
 #dashboard{display:none}
-.main{max-width:1280px;margin:0 auto;padding:16px 12px 48px}
-@media(min-width:600px){.main{padding:20px 20px 48px}}
-@media(min-width:900px){.main{padding:24px 24px 48px}}
+.main{max-width:1120px;margin:0 auto;padding:16px 12px 56px;display:flex;flex-direction:column;gap:14px}
+@media(min-width:600px){.main{padding:22px 20px 56px}}
+@media(min-width:900px){.main{padding:28px 24px 56px}}
+.card{background:var(--surface);border-radius:var(--rl);padding:18px 20px;min-width:0}
+.lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);font-weight:600}
+.sec{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin:22px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 
-/* SECTION HEADER */
-.sec{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+/* PILLS + CHIPS */
+.pill{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:4px 11px;border-radius:100px;white-space:nowrap}
+.pill[hidden]{display:none}
+.pill.ok{background:rgba(16,185,129,.15);color:#34d399}
+.pill.warn{background:rgba(245,158,11,.16);color:#fbbf24}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:13px;background:var(--s2);color:#cbd5e1;border-radius:9px;padding:7px 11px;cursor:text;transition:box-shadow .15s}
+.chip:focus-within{box-shadow:0 0 0 1.5px var(--accent)}
+.chip svg{flex-shrink:0;color:var(--t3)}
+.chip-in{background:transparent;border:0;outline:0;color:var(--text);font-family:inherit;font-size:13px;font-weight:600;padding:0;-webkit-appearance:none;appearance:none;-moz-appearance:textfield;color-scheme:dark}
+.chip-in::-webkit-inner-spin-button,.chip-in::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.chip-in[type=date]::-webkit-calendar-picker-indicator{opacity:.5;cursor:pointer}
 
-/* CARD */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:16px}
-@media(min-width:600px){.card{padding:20px 22px}}
-.card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:14px}
+/* PROGRESS CARD */
+.pg{padding:22px 24px}
+.pg-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.pg-title{display:flex;align-items:center;gap:12px;font-size:17px;font-weight:600}
+.pg-num{display:flex;align-items:baseline;gap:10px;margin-top:20px;flex-wrap:wrap}
+.pg-big{font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.pg-of{font-size:16px;color:var(--t2)}
+.pg-pct{margin-left:auto;font-size:16px;font-weight:600;color:#60a5fa}
+.pg-track{height:10px;background:var(--s3);border-radius:5px;overflow:hidden;margin-top:14px}
+.pg-fill{height:100%;background:var(--accent);border-radius:5px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+/* HERO KPIs */
+.hero{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:14px}
+@media(max-width:820px){.hero{grid-template-columns:1fr}}
+.kpi{padding:22px}
+.kpi.primary{background:#10213f}
+.kpi.primary .lbl{color:#8fb4f5}
+.kpi-val{font-size:38px;font-weight:700;margin-top:14px;line-height:1.05;display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;font-variant-numeric:tabular-nums;color:#fff}
+.kpi:not(.primary) .kpi-val{color:var(--text)}
+.kpi-unit{font-size:13px;font-weight:400;color:var(--t3)}
+.kpi-pill{margin-top:14px;min-height:26px}
+.kpi-s1{font-size:13px;color:var(--t2);margin-top:16px}
+.kpi-s2,.kpi-foot{font-size:12px;color:var(--t3);margin-top:4px}
+.kpi.primary .kpi-foot{color:#8fb4f5;margin-top:12px}
+.kpi b.g{color:#34d399}
+.kpi b.a{color:#fbbf24}
+
+/* CHART + GAUGES */
+.row2{display:grid;grid-template-columns:1.9fr 1fr;gap:14px}
+@media(max-width:900px){.row2{grid-template-columns:1fr}}
+.card-hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--t3);align-items:center}
+.chart-legend span{display:flex;align-items:center;gap:5px}
+.chart-wrap{position:relative;width:100%;height:210px;margin-top:14px}
+.gcard{display:flex;flex-direction:column;justify-content:space-around;gap:16px}
+@media(max-width:900px){.gcard{flex-direction:row;flex-wrap:wrap;justify-content:flex-start;gap:20px 28px}}
+.grow{display:flex;align-items:center;gap:16px}
+.gw{position:relative;width:84px;height:84px;flex-shrink:0}
+.gsvg{width:100%;height:100%;transform:rotate(-90deg)}
+.gtrack{fill:none;stroke:var(--s3);stroke-width:10}
+.gfill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+.gctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.gpct{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.gpct-s{font-size:11px}
+.gtitle{font-size:13px;font-weight:600;color:var(--text)}
+.gdone{font-size:12px;color:var(--t3);margin-top:3px}
+.gdet{font-size:12px;color:var(--t2);margin-top:1px}
+
+/* CERT TABLE */
+.cert-header{display:flex;align-items:center;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.cert-select{background:var(--s2);border:0;border-radius:8px;padding:5px 10px;color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
+.cert-select:focus{box-shadow:0 0 0 1.5px var(--accent)}
+.cert-overall{margin-left:auto;font-size:13px;font-weight:600}
+.cert-overall.all-met{color:var(--green)}
+.cert-overall.not-met{color:#60a5fa}
+.req{display:grid;grid-template-columns:1.3fr 1.4fr 104px 112px;gap:14px;align-items:center;padding:10px 0;border-top:1px solid #1a2740;font-size:13px}
+.req-head{border-top:0;padding:6px 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3)}
+.req-name small{display:block;font-size:11px;color:var(--t3);margin-top:1px}
+.req-bar{height:5px;background:var(--s3);border-radius:3px;overflow:hidden}
+.req-bar i{display:block;height:100%;border-radius:3px;transition:width .6s ease}
+.req-st{text-align:right;font-size:12px;font-weight:600;white-space:nowrap}
+.req-st.met{color:#34d399}
+.req-st.pend{color:#60a5fa}
+.req-st.man{color:#fbbf24}
+.req-dt{text-align:right;font-size:12px;color:var(--t2);font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){
+  .req{grid-template-columns:1fr auto;gap:4px 12px}
+  .req-head{display:none}
+  .req-name{grid-row:1/3}
+  .req-bar{grid-column:1/-1;grid-row:3}
+  .req-st{grid-column:2;grid-row:1}
+  .req-dt{grid-column:2;grid-row:2}
+}
+
+/* MORE DETAILS */
+.more-btn{align-self:center;display:inline-flex;align-items:center;gap:8px;background:var(--s2);border:0;border-radius:9px;padding:10px 18px;color:var(--t2);font-size:13px;font-family:inherit;cursor:pointer;transition:background .15s,color .15s;text-align:center}
+.more-btn:hover{background:var(--s3);color:var(--text)}
+.more-btn svg{transition:transform .2s;flex-shrink:0}
+.more-btn[aria-expanded=true] svg{transform:rotate(180deg)}
+#moreDetails{display:none}
+#moreDetails.open{display:block}
 
 /* STAT TILE */
 .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
 @media(min-width:480px){.tiles{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:700px){.tiles{grid-template-columns:repeat(4,1fr)}}
 @media(min-width:1000px){.tiles{grid-template-columns:repeat(8,1fr)}}
-.tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px}
+.tile{background:var(--surface);border-radius:var(--r);padding:12px}
 .tile-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .tile-val{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);line-height:1}
 .tile-sub{font-size:10px;color:var(--t2);margin-top:3px}
 .tile.blue .tile-val{color:var(--accent)}
 
-/* GAUGES */
-.gauges{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.gauge-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:10px}
-.gw{position:relative;width:110px;height:110px}
-@media(min-width:400px){.gw{width:130px;height:130px}}
-.gsvg{width:100%;height:100%;transform:rotate(-90deg)}
-.gtrack{fill:none;stroke:var(--s3);stroke-width:9}
-.gfill{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
-.gctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-.gpct{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
-@media(min-width:400px){.gpct{font-size:22px}}
-.gpct-s{font-size:12px}
-.gdone{font-size:9px;color:var(--t3);margin-top:2px}
-.gtitle{font-size:12px;font-weight:600;color:var(--text);text-align:center}
-.gdet{font-size:10px;color:var(--t2);text-align:center;line-height:1.5}
-
-/* CHART */
-.grid2{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px}
-@media(min-width:900px){.grid2{grid-template-columns:1fr 320px}}
-.chart-wrap{position:relative;width:100%;height:200px}
-@media(min-width:600px){.chart-wrap{height:220px}}
-@media screen{
-  .grid2 .card{display:flex;flex-direction:column}
-  .grid2 .card .chart-wrap{flex:1;height:auto;min-height:200px}
-  @media(min-width:600px){.grid2 .card .chart-wrap{min-height:220px}}
-}
-
-/* CERT CHECKLIST */
-.cert-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.cert-select{background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:5px 10px;color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
-.cert-select:focus{border-color:var(--accent)}
-.cert-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--t3)}
-.cert-overall{margin-left:auto;font-size:11px;font-weight:600}
-.cert-overall.all-met{color:var(--green)}
-.cert-overall.not-met{color:var(--accent)}
-.req-list{display:flex;flex-direction:column;gap:11px}
-.req{display:grid;grid-template-columns:1fr auto auto;gap:3px 8px;align-items:center}
-.req-name{font-size:12px;color:var(--text);font-weight:500;grid-column:1}
-.req-badge{grid-column:2;grid-row:1/3;align-self:center;font-size:10px;font-weight:700;padding:3px 7px;border-radius:100px;white-space:nowrap}
-.req-badge.met{background:var(--gg);color:var(--green);border:1px solid rgba(16,185,129,.25)}
-.req-badge.pend{background:var(--ag);color:var(--accent);border:1px solid rgba(59,130,246,.25)}
-.req-met-date{grid-column:3;grid-row:1/3;align-self:center;font-size:10px;color:var(--t2);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
-.req-track-wrap{grid-column:1}
-.req-track{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-bottom:2px}
-.req-fill{height:100%;border-radius:2px;transition:width .6s ease}
-.req-nums{font-size:10px;color:var(--t3);font-variant-numeric:tabular-nums}
-
 /* BREAKDOWN */
 .breakdown{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
 @media(min-width:600px){.breakdown{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:900px){.breakdown{grid-template-columns:repeat(4,1fr)}}
-.brow{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;gap:8px}
+.brow{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--surface);border-radius:8px;gap:8px}
 .blbl{font-size:11px;color:var(--t2)}
 .bval{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--text);white-space:nowrap}
 
-/* GOAL PLANNER */
-.goal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:12px}
+/* PLANNING TOOLS */
+.goal-card{background:var(--surface);border-radius:var(--rl);padding:16px;margin-bottom:12px}
 @media(min-width:600px){.goal-card{padding:20px 22px}}
-.goal-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.goal-grid{display:grid;grid-template-columns:1fr;gap:20px}
 @media(min-width:700px){.goal-grid{grid-template-columns:1fr 1fr}}
 .goal-section{display:flex;flex-direction:column;gap:10px}
 .goal-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:2px}
@@ -133,12 +176,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .goal-lbl{font-size:12px;color:var(--t2);flex-shrink:0;width:80px}
 .goal-input{background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:6px 10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:130px;-webkit-appearance:none}
 .goal-input:focus{border-color:var(--accent)}
-.goal-input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
-.goal-result{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:4px}
+.goal-result{background:var(--s2);border-radius:8px;padding:12px 14px;margin-top:4px}
 .goal-result-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent);line-height:1;margin-bottom:4px}
 .goal-result-lbl{font-size:11px;color:var(--t2);line-height:1.5}
 .goal-result.warn .goal-result-val{color:var(--amber)}
 .goal-result.ok .goal-result-val{color:var(--green)}
+.sched-note{font-size:12px;color:var(--t2);line-height:1.5}
 
 /* PACE */
 .pace-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
@@ -153,91 +196,101 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .ac-table td:last-child{text-align:right;font-variant-numeric:tabular-nums;width:80px}
 .ac-bar{display:inline-block;height:3px;background:var(--accent);border-radius:2px;vertical-align:middle;margin-left:8px;opacity:.4}
 
-/* BIG PROGRESS */
-.big-p{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:12px}
-.bp-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:8px;flex-wrap:wrap}
-.bp-title{font-size:14px;font-weight:600;white-space:nowrap}
-.bp-sub{font-size:11px;color:var(--t2)}
-.bp-track{height:10px;background:var(--s3);border-radius:5px;overflow:hidden;margin-bottom:6px}
-.bp-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--accent),#60a5fa);transition:width .8s cubic-bezier(.4,0,.2,1)}
-.bp-lbls{display:flex;justify-content:space-between;font-size:11px;color:var(--t3)}
-.bp-lbls strong{color:var(--t2)}
-
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--s3);border-radius:2px}
 
+.print-hdr{display:none;margin-bottom:12px;border-bottom:1.5px solid #0f172a;padding-bottom:6px}
+.print-hdr-title{font-size:16px;font-weight:700;color:#0f172a}
+.print-hdr-sub{font-size:11px;color:#64748b;margin-top:2px}
+
 /* PRINT */
 @media print{
   @page{size:8.5in 11in;margin:.5in .6in}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box!important}
-  .topbar,#emptyState,.topbar-actions,.goal-card{display:none!important}
+  .topbar,#emptyState,.more-btn,.plan-tools,.print-skip{display:none!important}
   #dashboard{display:block!important}
+  #moreDetails{display:block!important}
   body{background:#fff!important;color:#0f172a!important;font-size:9px!important;line-height:1.3!important;-webkit-text-size-adjust:none!important}
-  .main{padding:0!important;max-width:100%!important;width:100%!important}
-  .print-hdr{display:flex!important;justify-content:space-between!important;align-items:baseline!important;margin-bottom:6px!important;padding-bottom:5px!important;border-bottom:1.5px solid #0f172a!important}
+  .main{padding:0!important;max-width:100%!important;width:100%!important;gap:6px!important}
+  .print-hdr{display:flex!important;justify-content:space-between!important;align-items:baseline!important;margin-bottom:0!important;padding-bottom:5px!important;border-bottom:1.5px solid #0f172a!important}
   .print-hdr-title{font-size:13px!important;font-weight:700!important;color:#0f172a!important}
   .print-hdr-sub{font-size:8px!important;color:#64748b!important}
-  .big-p{border:1px solid #e2e8f0!important;background:#fff!important;border-radius:5px!important;padding:6px 10px!important;margin-bottom:6px!important}
-  .bp-hdr{margin-bottom:4px!important;flex-wrap:nowrap!important}
-  .bp-title{font-size:9px!important;font-weight:600!important;color:#0f172a!important}
-  .bp-sub{font-size:8px!important;color:#64748b!important}
-  .bp-track{height:6px!important;background:#e2e8f0!important;border-radius:3px!important;overflow:hidden!important;margin-bottom:3px!important}
-  .bp-lbls{font-size:8px!important;color:#94a3b8!important}
-  .bp-lbls strong{color:#475569!important}
-  .tiles{display:grid!important;grid-template-columns:repeat(8,1fr)!important;gap:4px!important;margin-bottom:6px!important}
+  .card{background:#fff!important;border:1px solid #e2e8f0!important;border-radius:5px!important;padding:7px 9px!important}
+  .lbl{font-size:6.5px!important;color:#94a3b8!important;letter-spacing:.06em!important}
+  .pg{padding:7px 10px!important}
+  .pg-title{font-size:11px!important;gap:6px!important}
+  .pill{font-size:7.5px!important;padding:1px 7px!important}
+  .pill.ok{background:#d1fae5!important;color:#065f46!important}
+  .pill.warn{background:#fef3c7!important;color:#92400e!important}
+  .chip{background:#f1f5f9!important;color:#0f172a!important;font-size:8px!important;padding:2px 7px!important;gap:3px!important}
+  .chip svg{display:none!important}
+  .chip-in{color:#0f172a!important;font-size:8px!important}
+  .pg-num{margin-top:5px!important;gap:6px!important}
+  .pg-big{font-size:20px!important;color:#0f172a!important}
+  .pg-of{font-size:9px!important;color:#64748b!important}
+  .pg-pct{font-size:9px!important;color:#2563eb!important}
+  .pg-track{height:6px!important;margin-top:5px!important;background:#e2e8f0!important}
+  .hero{gap:6px!important;grid-template-columns:1.25fr 1fr 1fr!important}
+  .kpi{padding:7px 9px!important}
+  .kpi.primary{background:#eff6ff!important;border-color:#bfdbfe!important}
+  .kpi.primary .lbl{color:#3b82f6!important}
+  .kpi-val{font-size:17px!important;margin-top:4px!important;color:#0f172a!important;gap:4px!important}
+  .kpi:not(.primary) .kpi-val{color:#0f172a!important}
+  .kpi-unit{font-size:8px!important}
+  .kpi-pill{margin-top:4px!important;min-height:0!important}
+  .kpi-s1{font-size:7.5px!important;color:#475569!important;margin-top:4px!important}
+  .kpi-s2,.kpi-foot,.kpi.primary .kpi-foot{font-size:7px!important;color:#64748b!important;margin-top:2px!important}
+  .kpi b.g{color:#059669!important}
+  .kpi b.a{color:#b45309!important}
+  .row2{grid-template-columns:1fr 175px!important;gap:6px!important}
+  .chart-legend{display:none!important}
+  .chart-wrap{height:122px!important;margin-top:5px!important}
+  .gcard{flex-direction:column!important;justify-content:space-around!important;gap:6px!important}
+  .grow{gap:8px!important}
+  .gw{width:44px!important;height:44px!important}
+  .gtrack{stroke:#e2e8f0!important;stroke-width:9!important}
+  .gfill{stroke-width:9!important}
+  .gpct{font-size:10px!important}
+  .gpct-s{font-size:6px!important}
+  .gtitle{font-size:8.5px!important;color:#0f172a!important}
+  .gdone,.gdet{font-size:7px!important;color:#64748b!important;margin-top:0!important}
+  .cert-header{margin-bottom:2px!important;gap:6px!important}
+  .cert-select{font-size:7.5px!important;color:#475569!important;background:#f1f5f9!important;padding:1px 6px!important}
+  .cert-overall{font-size:8px!important}
+  .req{grid-template-columns:1.3fr 1.4fr 70px 70px!important;gap:8px!important;padding:3px 0!important;border-top:1px solid #f1f5f9!important;font-size:8px!important}
+  .req-head{font-size:6.5px!important;color:#94a3b8!important;padding:2px 0!important}
+  .req-name small{display:none!important}
+  .req-bar{height:3px!important;background:#e2e8f0!important}
+  .req-st{font-size:7.5px!important}
+  .req-st.met{color:#059669!important}
+  .req-st.pend{color:#1d4ed8!important}
+  .req-st.man{color:#b45309!important}
+  .req-dt{font-size:7.5px!important;color:#475569!important}
+  .sec{font-size:7px!important;color:#94a3b8!important;letter-spacing:.07em!important;margin:4px 0 2px!important;padding-bottom:3px!important;border-bottom:1px solid #e2e8f0!important;page-break-after:avoid!important}
+  .tiles{grid-template-columns:repeat(8,1fr)!important;gap:4px!important;margin-bottom:4px!important}
   .tile{background:#f8fafc!important;border:1px solid #e2e8f0!important;border-radius:4px!important;padding:5px 6px!important}
-  .tile-lbl{font-size:6.5px!important;color:#94a3b8!important;text-transform:uppercase!important;letter-spacing:.05em!important;margin-bottom:2px!important}
-  .tile-val{font-size:11px!important;font-weight:700!important;color:#0f172a!important;line-height:1!important}
+  .tile-lbl{font-size:6.5px!important;color:#94a3b8!important;margin-bottom:2px!important}
+  .tile-val{font-size:11px!important;color:#0f172a!important}
   .tile.blue .tile-val{color:#2563eb!important}
   .tile-sub{font-size:6.5px!important;color:#64748b!important;margin-top:1px!important}
-  .gauges{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-bottom:6px!important}
-  .gauge-card{background:#f8fafc!important;border:1px solid #e2e8f0!important;border-radius:5px!important;padding:8px 12px!important;flex-direction:row!important;gap:12px!important;align-items:center!important;justify-content:flex-start!important}
-  .gw{width:62px!important;height:62px!important;flex-shrink:0!important}
-  .gsvg{width:62px!important;height:62px!important}
-  .gtrack{stroke:#e2e8f0!important;stroke-width:5!important}
-  .gfill{stroke-width:5!important}
-  .gpct{font-size:12px!important;font-weight:700!important}
-  .gpct-s{font-size:7px!important}
-  .gdone{font-size:7px!important;color:#94a3b8!important;margin-top:1px!important}
-  .gtitle{font-size:9px!important;font-weight:600!important;color:#0f172a!important;text-align:left!important;margin-bottom:2px!important}
-  .gdet{font-size:7.5px!important;color:#64748b!important;text-align:left!important;line-height:1.4!important}
-  .sec{font-size:7px!important;color:#94a3b8!important;text-transform:uppercase!important;letter-spacing:.07em!important;font-weight:600!important;margin:7px 0 4px!important;padding-bottom:3px!important;border-bottom:1px solid #e2e8f0!important;page-break-after:avoid!important}
-  .grid2{display:grid!important;grid-template-columns:1fr 200px!important;gap:6px!important;margin-bottom:6px!important}
-  .card{background:#fff!important;border:1px solid #e2e8f0!important;border-radius:5px!important;padding:7px 9px!important}
-  .card-title{font-size:7px!important;color:#94a3b8!important;margin-bottom:5px!important;letter-spacing:.06em!important}
-  .chart-legend{display:none!important}
-  .chart-wrap{height:138px!important}
-  .req-list{gap:4px!important}
-  .req{gap:1px 5px!important}
-  .req-name{font-size:8px!important;font-weight:500!important;color:#0f172a!important}
-  .req-badge{font-size:7px!important;padding:1px 5px!important;white-space:nowrap!important;border-radius:100px!important}
-  .req-badge.met{background:#d1fae5!important;color:#065f46!important;border:1px solid #6ee7b7!important}
-  .req-badge.pend{background:#dbeafe!important;color:#1e40af!important;border:1px solid #93c5fd!important}
-  .req-met-date{font-size:7px!important;color:#94a3b8!important}
-  .req-track{height:3px!important;background:#e2e8f0!important;border-radius:2px!important;margin-bottom:1px!important}
-  .req-nums{font-size:7px!important;color:#94a3b8!important}
-  .breakdown{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:4px!important;margin-bottom:6px!important}
+  .breakdown{grid-template-columns:repeat(6,1fr)!important;gap:4px!important;margin-bottom:4px!important}
   .brow{background:#f8fafc!important;border:1px solid #e2e8f0!important;border-radius:4px!important;padding:4px 6px!important;flex-direction:column!important;align-items:flex-start!important;gap:1px!important}
   .blbl{font-size:7px!important;color:#94a3b8!important}
-  .bval{font-size:9px!important;font-weight:600!important;color:#0f172a!important}
-  .pace-row{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:4px!important;margin-bottom:6px!important}
+  .bval{font-size:9px!important;color:#0f172a!important}
+  .pace-row{grid-template-columns:repeat(6,1fr)!important;gap:4px!important;margin-bottom:4px!important}
   .pace-row .tile{padding:5px 6px!important}
   .pace-row .tile-val{font-size:10px!important}
-  #yearlyCard{margin-bottom:6px!important}
-  #yearlyWrap{height:80px!important}
+  #yearlyCard{margin-bottom:0!important}
+  #yearlyWrap{height:70px!important;margin-top:0!important}
   .ac-table{font-size:8px!important}
-  .ac-table th{font-size:7px!important;padding:0 6px 4px!important;color:#94a3b8!important;border-color:#e2e8f0!important}
-  .ac-table td{padding:3px 6px!important;color:#0f172a!important;border-color:#f1f5f9!important}
+  .ac-table th{font-size:7px!important;padding:0 6px 3px!important;color:#94a3b8!important;border-color:#e2e8f0!important}
+  .ac-table td{padding:2px 6px!important;color:#0f172a!important;border-color:#f1f5f9!important}
+  .ac-table tr:nth-child(n+7){display:none!important}
   .ac-bar{display:none!important}
-  .cert-select,.cert-header .cert-title,.cert-header .cert-overall{font-size:7px!important;color:#94a3b8!important}
-  .cert-header{margin-bottom:6px!important;gap:6px!important}
-  .tiles,.gauges,.grid2,.breakdown,.pace-row{page-break-inside:avoid!important}
+  .tiles,.hero,.row2,.breakdown,.pace-row,.req{page-break-inside:avoid!important}
 }
-.print-hdr{display:none;margin-bottom:12px;border-bottom:1.5px solid #0f172a;padding-bottom:6px}
-.print-hdr-title{font-size:16px;font-weight:700;color:#0f172a}
-.print-hdr-sub{font-size:11px;color:#64748b;margin-top:2px}
 </style>
 </head>
 <body>
@@ -274,142 +327,160 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     </div>
 
     <!-- PROGRESS -->
-    <div class="big-p">
-      <div class="bp-hdr">
-        <div class="bp-title" id="bpTitle">Total flight time</div>
-        <div class="bp-sub" id="bpSub"></div>
+    <section class="card pg">
+      <div class="pg-top">
+        <div class="pg-title">Total flight time <span class="pill ok" id="stPill" hidden></span></div>
+        <div class="chips">
+          <label class="chip" title="Target hours">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".5"/></svg>
+            <input class="chip-in" type="number" id="goalHours" min="1" step="any" style="width:4.4em" oninput="calcGoalA()" aria-label="Target hours">
+            <span>hrs</span>
+          </label>
+          <label class="chip" title="Target date">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            <input class="chip-in" type="date" id="goalDate" oninput="calcGoalA()" aria-label="Target date">
+          </label>
+        </div>
       </div>
-      <div class="bp-track"><div class="bp-fill" id="bpFill" style="width:0%"></div></div>
-      <div class="bp-lbls"><span>0</span><strong id="bpCur"></strong><span id="bpGoal">1,500</span></div>
+      <div class="pg-num"><span class="pg-big" id="pgNum">0.0</span><span class="pg-of" id="pgOf"></span><span class="pg-pct" id="pgPct"></span></div>
+      <div class="pg-track"><div class="pg-fill" id="pgFill" style="width:0%"></div></div>
+    </section>
+
+    <!-- HERO KPIs -->
+    <div class="hero">
+      <div class="card kpi primary">
+        <div class="lbl">Estimated completion</div>
+        <div class="kpi-val" id="kDate">—</div>
+        <div class="kpi-pill"><span class="pill ok" id="kDatePill" hidden></span></div>
+        <div class="kpi-foot" id="kDateFoot"></div>
+      </div>
+      <div class="card kpi">
+        <div class="lbl">Hours per month</div>
+        <div class="kpi-val"><span id="kMonth">—</span><span class="kpi-unit" id="kMonthUnit"></span></div>
+        <div class="kpi-s1" id="kMonthS1"></div>
+        <div class="kpi-s2" id="kMonthS2"></div>
+      </div>
+      <div class="card kpi">
+        <div class="lbl">Hours per working day</div>
+        <div class="kpi-val"><span id="kDay">—</span><span class="kpi-unit" id="kDayUnit"></span></div>
+        <div class="kpi-s1" id="kDayS1"></div>
+        <div class="kpi-s2" id="kDayS2"></div>
+      </div>
     </div>
 
-    <!-- STATS -->
-    <div class="tiles" id="tilesRow"></div>
-
-    <!-- GAUGES -->
-    <div class="gauges">
-      <div class="gauge-card">
-        <div class="gw">
-          <svg class="gsvg" viewBox="0 0 130 130"><circle class="gtrack" cx="65" cy="65" r="55"/><circle class="gfill" id="g1f" cx="65" cy="65" r="55" stroke="#3b82f6" stroke-dasharray="345.4" stroke-dashoffset="345.4"/></svg>
-          <div class="gctr"><div class="gpct" id="g1p" style="color:#3b82f6">0<span class="gpct-s">%</span></div><div class="gdone" id="g1d"></div></div>
-        </div>
-        <div class="gtitle" id="g1title">Total flight time</div>
-        <div class="gdet" id="g1det"></div>
-      </div>
-      <div class="gauge-card">
-        <div class="gw">
-          <svg class="gsvg" viewBox="0 0 130 130"><circle class="gtrack" cx="65" cy="65" r="55"/><circle class="gfill" id="g2f" cx="65" cy="65" r="55" stroke="#f59e0b" stroke-dasharray="345.4" stroke-dashoffset="345.4"/></svg>
-          <div class="gctr"><div class="gpct" id="g2p" style="color:#f59e0b">0<span class="gpct-s">%</span></div><div class="gdone" id="g2d"></div></div>
-        </div>
-        <div class="gtitle" id="g2title">Cross-country time</div>
-        <div class="gdet" id="g2det"></div>
-      </div>
-    </div>
-
-    <!-- MONTHLY CHART + CERT CHECKLIST -->
-    <div class="grid2">
+    <!-- MONTHLY CHART + GAUGES -->
+    <div class="row2">
       <div class="card">
-        <div class="card-title">Monthly hours</div>
-        <div class="chart-legend" style="font-size:10px;color:var(--t3);margin:-6px 0 12px;display:flex;gap:14px;flex-wrap:wrap;">
-          <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:1px;"></span>Below target</span>
-          <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;background:#10b981;border-radius:1px;"></span>At/above target</span>
-          <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:14px;height:0;border-top:1.5px dashed #f59e0b;"></span><span id="paceLegendLbl">Avg pace</span></span>
+        <div class="card-hd">
+          <div class="lbl">Monthly hours</div>
+          <div class="chart-legend">
+            <span><i style="width:8px;height:8px;background:#10b981;border-radius:2px;display:inline-block"></i>At/above pace</span>
+            <span><i style="width:8px;height:8px;background:#3b82f6;border-radius:2px;display:inline-block"></i>Below</span>
+            <span><i style="width:14px;height:0;border-top:2px dashed #f59e0b;display:inline-block"></i><span id="paceLegendLbl">Avg pace</span></span>
+          </div>
         </div>
         <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
       </div>
+      <div class="card gcard">
+        <div class="grow">
+          <div class="gw">
+            <svg class="gsvg" viewBox="0 0 130 130" aria-hidden="true"><circle class="gtrack" cx="65" cy="65" r="55"/><circle class="gfill" id="g1f" cx="65" cy="65" r="55" stroke="#3b82f6" stroke-dasharray="345.4" stroke-dashoffset="345.4"/></svg>
+            <div class="gctr"><div class="gpct" id="g1p" style="color:#3b82f6">0<span class="gpct-s">%</span></div></div>
+          </div>
+          <div><div class="gtitle" id="g1title">Total flight time</div><div class="gdone" id="g1d"></div><div class="gdet" id="g1det"></div></div>
+        </div>
+        <div class="grow">
+          <div class="gw">
+            <svg class="gsvg" viewBox="0 0 130 130" aria-hidden="true"><circle class="gtrack" cx="65" cy="65" r="55"/><circle class="gfill" id="g2f" cx="65" cy="65" r="55" stroke="#f59e0b" stroke-dasharray="345.4" stroke-dashoffset="345.4"/></svg>
+            <div class="gctr"><div class="gpct" id="g2p" style="color:#f59e0b">0<span class="gpct-s">%</span></div></div>
+          </div>
+          <div><div class="gtitle" id="g2title">Cross-country time</div><div class="gdone" id="g2d"></div><div class="gdet" id="g2det"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERT REQUIREMENTS -->
+    <section class="card">
+      <div class="cert-header">
+        <div class="lbl">Certificate requirements</div>
+        <select class="cert-select" id="certSelect" onchange="renderCert()" aria-label="Certificate">
+          <option value="atp">ATP (61.159)</option>
+          <option value="comm">Commercial (61.129)</option>
+          <option value="inst">Instrument (61.65)</option>
+          <option value="ppl">Private (61.109)</option>
+          <option value="sport">Sport Pilot (61.313)</option>
+          <option value="rec">Recreational (61.99)</option>
+        </select>
+        <div class="cert-overall" id="certOverall"></div>
+      </div>
+      <div class="req req-head"><span>Requirement</span><span>Progress</span><span style="text-align:right">Status</span><span style="text-align:right">Met on</span></div>
+      <div id="reqList"></div>
+    </section>
+
+    <button class="more-btn" id="moreBtn" aria-expanded="false" aria-controls="moreDetails" onclick="toggleMore()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      <span id="moreLbl">More details: planning tools, breakdown, trends, aircraft</span>
+    </button>
+
+    <div id="moreDetails">
+
+      <div class="plan-tools">
+        <div class="sec" style="margin-top:6px">Planning tools</div>
+        <div class="goal-card">
+          <div class="goal-grid">
+            <div class="goal-section">
+              <div class="goal-section-title">Set a pace → find completion date</div>
+              <div class="goal-row">
+                <span class="goal-lbl">Target hours</span>
+                <input class="goal-input" type="number" id="goalHoursB" placeholder="e.g. 1500" min="1" oninput="calcGoalB()">
+              </div>
+              <div class="goal-row">
+                <span class="goal-lbl">Monthly rate</span>
+                <input class="goal-input" type="number" id="goalRate" placeholder="hrs/month" min="1" step="0.5" oninput="calcGoalB()">
+              </div>
+              <div class="goal-result" id="goalResultB">
+                <div class="goal-result-val" id="goalResBVal">—</div>
+                <div class="goal-result-lbl" id="goalResBLbl">Enter a target and monthly rate above</div>
+              </div>
+            </div>
+            <div class="goal-section">
+              <div class="goal-section-title">Work schedule</div>
+              <div class="sched-note">Hours per working day counts every day between today and your target date that isn't marked as a day off in this schedule.</div>
+              <div class="goal-row">
+                <label class="tbtn" for="scheduleInput" style="padding:6px 10px;font-size:12px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+                  <span>Upload work schedule (.ics)</span>
+                </label>
+                <input type="file" id="scheduleInput" accept=".ics">
+              </div>
+              <div class="sched-note" id="scheduleStatus">2026 Work Schedule (default) · 127 days off loaded</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec print-skip">Flight summary</div>
+      <div class="tiles print-skip" id="tilesRow"></div>
+
+      <div class="sec">Flight hour breakdown</div>
+      <div class="breakdown" id="breakdownGrid"></div>
+
+      <div class="sec">Pace &amp; trends</div>
+      <div class="pace-row" id="paceRow"></div>
+
+      <div class="sec">Hours by year</div>
+      <div class="card" id="yearlyCard" style="margin-bottom:12px">
+        <div class="chart-wrap" id="yearlyWrap" style="height:150px;margin-top:0"><canvas id="yearlyChart"></canvas></div>
+      </div>
+
+      <div class="sec">Top aircraft</div>
       <div class="card">
-        <div class="cert-header">
-          <div class="cert-title">Certificate requirements</div>
-          <select class="cert-select" id="certSelect" onchange="renderCert()">
-            <option value="atp">ATP (61.159)</option>
-            <option value="comm">Commercial (61.129)</option>
-            <option value="inst">Instrument (61.65)</option>
-            <option value="ppl">Private (61.109)</option>
-            <option value="sport">Sport Pilot (61.313)</option>
-            <option value="rec">Recreational (61.99)</option>
-          </select>
-          <div class="cert-overall" id="certOverall"></div>
-        </div>
-        <div class="req-list" id="reqList"></div>
+        <table class="ac-table" id="acTable">
+          <thead><tr><th>Aircraft</th><th style="text-align:right;width:80px">Hours</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
-    </div>
 
-    <!-- GOAL PLANNER -->
-    <div class="sec">Goal planner</div>
-    <div class="goal-card">
-      <div class="goal-grid">
-        <!-- Mode A: target hours + date → required rate -->
-        <div class="goal-section">
-          <div class="goal-section-title">Set a target → find required pace</div>
-          <div class="goal-row">
-            <span class="goal-lbl">Target hours</span>
-            <input class="goal-input" type="number" id="goalHours" placeholder="e.g. 1500" min="1" oninput="calcGoalA()">
-          </div>
-          <div class="goal-row">
-            <span class="goal-lbl">Target date</span>
-            <input class="goal-input" type="date" id="goalDate" oninput="calcGoalA()">
-          </div>
-          <div class="goal-result" id="goalResultA">
-            <div class="goal-result-val" id="goalResAVal">—</div>
-            <div class="goal-result-lbl" id="goalResALbl">Enter a target hours and date above</div>
-          </div>
-        </div>
-        <!-- Mode B: monthly rate → estimated completion date -->
-        <div class="goal-section">
-          <div class="goal-section-title">Set a pace → find completion date</div>
-          <div class="goal-row">
-            <span class="goal-lbl">Target hours</span>
-            <input class="goal-input" type="number" id="goalHoursB" placeholder="e.g. 1500" min="1" oninput="calcGoalB()">
-          </div>
-          <div class="goal-row">
-            <span class="goal-lbl">Monthly rate</span>
-            <input class="goal-input" type="number" id="goalRate" placeholder="hrs/month" min="1" step="0.5" oninput="calcGoalB()">
-          </div>
-          <div class="goal-result" id="goalResultB">
-            <div class="goal-result-val" id="goalResBVal">—</div>
-            <div class="goal-result-lbl" id="goalResBLbl">Enter a target and monthly rate above</div>
-          </div>
-        </div>
-        <!-- Mode C: work schedule → required hours per working day -->
-        <div class="goal-section" style="grid-column:1/-1">
-          <div class="goal-section-title">Work schedule → hours needed per working day</div>
-          <div class="goal-row">
-            <label class="tbtn" for="scheduleInput" style="padding:6px 10px;font-size:12px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
-              <span>Upload work schedule (.ics)</span>
-            </label>
-            <input type="file" id="scheduleInput" accept=".ics">
-            <span class="goal-lbl" id="scheduleStatus" style="width:auto;">2026 Work Schedule (default) · 127 days off loaded</span>
-          </div>
-          <div class="goal-result" id="goalResultC">
-            <div class="goal-result-val" id="goalResCVal">—</div>
-            <div class="goal-result-lbl" id="goalResCLbl">Set a target hours and date above to see hours needed per working day</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BREAKDOWN -->
-    <div class="sec">Flight hour breakdown</div>
-    <div class="breakdown" id="breakdownGrid"></div>
-
-    <!-- PACE -->
-    <div class="sec">Pace & trends</div>
-    <div class="pace-row" id="paceRow"></div>
-
-    <!-- YEARLY -->
-    <div class="sec">Hours by year</div>
-    <div class="card" id="yearlyCard" style="margin-bottom:12px">
-      <div class="chart-wrap" id="yearlyWrap" style="height:150px"><canvas id="yearlyChart"></canvas></div>
-    </div>
-
-    <!-- AIRCRAFT -->
-    <div class="sec">Top aircraft</div>
-    <div class="card">
-      <table class="ac-table" id="acTable">
-        <thead><tr><th>Aircraft</th><th style="text-align:right;width:80px">Hours</th></tr></thead>
-        <tbody></tbody>
-      </table>
     </div>
 
   </div>
@@ -593,14 +664,29 @@ function computeStats(rows){
   s.total_ifr=s.actual_ifr+s.sim_ifr;
   const mKeys=Object.keys(monthly).sort();
   const mVals=mKeys.map(k=>monthly[k]);
-  const last12=mVals.slice(-12);
-  const avg12=last12.length?last12.reduce((a,b)=>a+b,0)/last12.length:0;
-  const avgAll=mVals.length?mVals.reduce((a,b)=>a+b,0)/mVals.length:0;
   const bestVal=mVals.length?Math.max(...mVals):0;
   const bestKey=mKeys[mVals.indexOf(bestVal)]||'';
   const now=new Date();
-  const eoy=new Date(now.getFullYear(),11,31);
-  const mLeft=((eoy.getFullYear()-now.getFullYear())*12)+(eoy.getMonth()-now.getMonth())+1;
+
+  // monthly pace is averaged over complete calendar months only (the current,
+  // partly-flown month would drag it down), counting months with no flying as 0
+  // so gaps in the logbook aren't skipped over
+  const idxOf=k=>{const[y,m]=k.split('-');return(+y)*12+(+m)-1;};
+  const lastIdx=now.getFullYear()*12+now.getMonth()-1;
+  const firstIdx=mKeys.length?idxOf(mKeys[0]):lastIdx+1;
+  const sumMonths=(from,to)=>{
+    let t=0;
+    for(let i=from;i<=to;i++)t+=monthly[`${Math.floor(i/12)}-${String(i%12+1).padStart(2,'0')}`]||0;
+    return t;
+  };
+  const meanWithData=mVals.length?mVals.reduce((a,b)=>a+b,0)/mVals.length:0;
+  const n12=Math.min(12,lastIdx-firstIdx+1);
+  const avg12=n12>=1?sumMonths(lastIdx-n12+1,lastIdx)/n12:meanWithData;
+  const nAll=lastIdx-firstIdx+1;
+  const avgAll=nAll>=1?sumMonths(firstIdx,lastIdx)/nAll:meanWithData;
+
+  // fractional months from now to the end of the year
+  const mLeft=(new Date(now.getFullYear(),11,31,23,59,59)-now)/(1000*60*60*24*30.44);
   return{s,monthly,mKeys,mVals,yearly,aircraft,avg12,avgAll,bestVal,bestKey,mLeft,cumSeries};
 }
 
@@ -636,58 +722,16 @@ function renderCert(){
   const cert=CERTS[certKey];
   const s=G.s;
 
-  // update gauges
   const g1=cert.g1,g2=cert.g2;
   document.getElementById('g1title').textContent=g1.label;
   document.getElementById('g2title').textContent=g2.label;
   setGauge('g1f','g1p','g1d','g1det',s[g1.key],g1.need,g1.color);
   setGauge('g2f','g2p','g2d','g2det',s[g2.key],g2.need,g2.color);
 
-  // update progress bar with primary requirement
-  const pr=cert.reqs[0];
-  const have=s[pr.key], need=pr.need;
-  const pct=Math.min(100,(have/need)*100);
-  document.getElementById('bpTitle').textContent=cert.label;
-  document.getElementById('bpFill').style.width=pct.toFixed(1)+'%';
-  document.getElementById('bpCur').textContent=fmt(have)+' hrs';
-  document.getElementById('bpGoal').textContent=need+' hrs';
-  const toGo=Math.max(0,need-have);
-
-  // required pace: goal-planner target (hours + date) driven when set, else historical avg
-  let threshRate=G.avg12||0;
-  if(toGo<=0){
-    document.getElementById('bpSub').textContent='Primary requirement met!';
-  }else{
-    let goalPart;
-    if(G.targetDate&&G.targetHours){
-      const monthsLeft=Math.max(0.01,(G.targetDate-new Date())/(1000*60*60*24*30.44));
-      const goalToGo=Math.max(0,G.targetHours-have);
-      threshRate=goalToGo/monthsLeft;
-      goalPart=goalToGo>0
-        ?`${fmt(threshRate,1)} hrs/mo needed for your ${fmt(G.targetHours,0)}-hr goal by ${G.targetDate.toLocaleDateString('en-US',{month:'short',year:'numeric'})}`
-        :`your ${fmt(G.targetHours,0)}-hr goal is already met`;
-    }
-    // current pace + estimated completion date at that pace (always shown)
-    let ratePart;
-    if(G.avg12>0){
-      const estDate=new Date();
-      estDate.setDate(estDate.getDate()+Math.round((toGo/G.avg12)*30.44));
-      ratePart=`currently ${fmt(G.avg12,1)} hrs/mo · est. completion ${fmtDate(estDate)}`;
-    }
-    document.getElementById('bpSub').textContent=
-      `${fmt(toGo,1)} hrs to go`+(goalPart?` · ${goalPart}`:'')+(ratePart?` · ${ratePart}`:'');
-  }
-
-  // req list
   let metCount=0;
   const html=cert.reqs.map(r=>{
     if(r.need===0){
-      return `<div class="req">
-        <span class="req-name">${r.name}</span>
-        <span class="req-badge pend" style="background:rgba(245,158,11,.1);color:#f59e0b;border-color:rgba(245,158,11,.3)">Manual</span>
-        <div class="req-track-wrap"><div class="req-track"><div class="req-fill" style="width:0%;background:#f59e0b"></div></div>
-        <div class="req-nums">${r.note||'Verify in logbook'}</div></div>
-      </div>`;
+      return `<div class="req"><span class="req-name">${r.name}<small>${r.note||'Verify in logbook'}</small></span><div class="req-bar"><i style="width:0%"></i></div><span class="req-st man">Manual</span><span class="req-dt"></span></div>`;
     }
     const have=s[r.key], met=have>=r.need;
     if(met)metCount++;
@@ -695,86 +739,150 @@ function renderCert(){
     const fc=met?'#10b981':p>60?'#f59e0b':'#3b82f6';
     const haveStr=r.unit?fmt(have)+' '+r.unit:have.toLocaleString();
     const needStr=r.unit?r.need+' '+r.unit:r.need;
-    const badge=met?'<span class="req-badge met">✓ MET</span>'
-      :`<span class="req-badge pend">${fmt(r.need-have,r.unit?1:0)} to go</span>`;
-    let dateCol='';
-    if(met){
-      const d=dateMet(r.key,r.need);
-      if(d)dateCol=`<span class="req-met-date">${fmtMetDate(d)}</span>`;
-    }
-    return `<div class="req"><span class="req-name">${r.name}</span>${badge}${dateCol}
-      <div class="req-track-wrap">
-        <div class="req-track"><div class="req-fill" style="width:${p.toFixed(1)}%;background:${fc}"></div></div>
-        <div class="req-nums">${haveStr} / ${needStr}</div>
-      </div></div>`;
+    const status=met?'Met':`${fmt(r.need-have,r.unit?1:0)} to go`;
+    let dt='';
+    if(met){const d=dateMet(r.key,r.need);if(d)dt=fmtMetDate(d);}
+    return `<div class="req"><span class="req-name">${r.name}<small>${haveStr} / ${needStr}</small></span><div class="req-bar"><i style="width:${p.toFixed(1)}%;background:${fc}"></i></div><span class="req-st ${met?'met':'pend'}">${status}</span><span class="req-dt">${dt}</span></div>`;
   }).join('');
   document.getElementById('reqList').innerHTML=html;
 
   const autoReqs=cert.reqs.filter(r=>r.need>0);
   const allMet=metCount===autoReqs.length;
   const ov=document.getElementById('certOverall');
-  ov.textContent=allMet?'All requirements met':`${metCount}/${autoReqs.length} met`;
+  ov.textContent=allMet?'All requirements met':`${metCount} / ${autoReqs.length} met`;
   ov.className='cert-overall '+(allMet?'all-met':'not-met');
+}
 
-  // update monthly chart threshold line (target-date pace when set, else historical avg)
-  const paceLegendLbl=document.getElementById('paceLegendLbl');
-  if(paceLegendLbl)paceLegendLbl.textContent=(G.targetDate&&G.targetHours&&toGo>0)?'Target pace':'Avg pace';
-  if(G.monthlyChart){
-    const pace=threshRate;
-    G.monthlyChart.data.datasets[1].data=new Array(G.mKeys.length).fill(pace>0?Math.round(pace*10)/10:60);
-    const colors=G.mVals.map(v=>v>=(pace||60)?'#10b981':'#3b82f6');
-    G.monthlyChart.data.datasets[0].backgroundColor=colors;
-    G.monthlyChart.update('none');
-    // explicit resize as a safety net in case the card's flex-driven height
-    // change (from the req-list re-render above) hasn't been picked up yet
-    // by the canvas's ResizeObserver in this browser
-    G.monthlyChart.resize();
+// ── HERO (estimated completion, hrs/month, hrs/working day) ────
+function fmtDay(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function isoDay(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function daysBetween(a,b){return Math.round((b-a)/86400000);}
+
+// working days from tomorrow through the target date (inclusive); today is never
+// counted since whatever is flown today is already in (or will be logged to) the logbook
+function workingDaysUntil(target){
+  const start=new Date();start.setHours(0,0,0,0);start.setDate(start.getDate()+1);
+  const end=new Date(target);end.setHours(0,0,0,0);
+  let working=0,off=0;
+  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+    if(WORKSCHED&&WORKSCHED.offDates.has(isoDay(d)))off++;else working++;
   }
+  return{working,off};
+}
+
+// last date the schedule is known to cover: a calendar spanning 5+ months is
+// treated as a full-year schedule (through Dec 31 of its last year), since the
+// final days of the year are often working days with no event
+function scheduleCoverageEnd(){
+  if(!WORKSCHED||!WORKSCHED.offDates.size)return null;
+  const dates=[...WORKSCHED.offDates].sort();
+  const first=new Date(dates[0]+'T12:00:00'),last=new Date(dates[dates.length-1]+'T12:00:00');
+  return daysBetween(first,last)>150?new Date(last.getFullYear(),11,31,12):last;
+}
+
+function setPill(id,cls,text){
+  const el=document.getElementById(id);
+  if(!text){el.hidden=true;return;}
+  el.hidden=false;el.className='pill '+cls;el.textContent=text;
+}
+
+function updatePaceLine(rate,isTarget){
+  const lbl=document.getElementById('paceLegendLbl');
+  if(lbl)lbl.textContent=isTarget?'Target pace':'Avg pace';
+  if(!G.monthlyChart)return;
+  const pace=rate>0?Math.round(rate*10)/10:60;
+  G.monthlyChart.data.datasets[1].data=new Array(G.mKeys.length).fill(pace);
+  G.monthlyChart.data.datasets[0].backgroundColor=G.mVals.map(v=>v>=pace?'#10b981':'#3b82f6');
+  G.monthlyChart.update('none');
+}
+
+function renderHero(){
+  if(!G.s)return;
+  const $=id=>document.getElementById(id);
+  const have=G.s.total;
+  const goal=parseFloat($('goalHours').value)||0;
+  const toGo=Math.max(0,goal-have);
+  const hasTarget=!!(G.targetDate&&goal>0);
+  const avg=G.avg12||0;
+
+  $('pgNum').textContent=fmt(have);
+  $('pgOf').textContent=goal>0?'/ '+fmt(goal,0)+' hrs':'';
+  const pct=goal>0?Math.min(100,have/goal*100):0;
+  $('pgPct').textContent=goal>0?pct.toFixed(1)+'%':'';
+  $('pgFill').style.width=pct.toFixed(1)+'%';
+
+  let est=null,delta=null;
+  if(toGo>0&&avg>0){est=new Date();est.setDate(est.getDate()+Math.round(toGo/avg*30.44));}
+  if(est&&hasTarget)delta=daysBetween(est,G.targetDate);
+
+  if(goal<=0)setPill('stPill','',null);
+  else if(toGo<=0)setPill('stPill','ok','Goal met');
+  else if(delta!==null)setPill('stPill',delta>=0?'ok':'warn',delta>=0?'On track':'Behind');
+  else setPill('stPill','',null);
+
+  if(goal<=0){
+    $('kDate').textContent='—';setPill('kDatePill','',null);$('kDateFoot').textContent='Enter a target above';
+  }else if(toGo<=0){
+    $('kDate').textContent='Goal met';setPill('kDatePill','ok',fmt(have)+' hrs logged');$('kDateFoot').textContent='';
+  }else if(!est){
+    $('kDate').textContent='—';setPill('kDatePill','',null);$('kDateFoot').textContent='Not enough recent flying to project';
+  }else{
+    $('kDate').textContent=fmtDay(est);
+    if(delta===null)setPill('kDatePill','',null);
+    else if(delta>0)setPill('kDatePill','ok',delta+' day'+(delta===1?'':'s')+' before target');
+    else if(delta===0)setPill('kDatePill','ok','On your target date');
+    else setPill('kDatePill','warn',(-delta)+' day'+(delta===-1?'':'s')+' after target');
+    $('kDateFoot').textContent='At your current pace of '+fmt(avg,1)+' hrs/mo';
+  }
+
+  let reqMonth=null;
+  if(toGo>0&&hasTarget){
+    const monthsLeft=Math.max(0.01,(G.targetDate-new Date())/(1000*60*60*24*30.44));
+    reqMonth=toGo/monthsLeft;
+    $('kMonth').textContent=fmt(reqMonth,1);$('kMonthUnit').textContent='needed';
+    if(avg>0){
+      const ok=avg>=reqMonth;
+      $('kMonthS1').innerHTML='You average <b class="'+(ok?'g':'a')+'">'+fmt(avg,1)+'</b>';
+      $('kMonthS2').textContent=ok?fmt(avg-reqMonth,1)+" above what's required":fmt(reqMonth-avg,1)+" short of what's required";
+    }else{$('kMonthS1').textContent='';$('kMonthS2').textContent='';}
+  }else{
+    $('kMonth').textContent='—';$('kMonthUnit').textContent='';
+    $('kMonthS1').textContent=goal>0&&toGo<=0?'Goal already met':G.targetState==='past'?'Target date has passed':'Set a target date';
+    $('kMonthS2').textContent='';
+  }
+
+  if(toGo>0&&hasTarget){
+    const wd=workingDaysUntil(G.targetDate);
+    if(wd.working>0){
+      $('kDay').textContent=fmt(toGo/wd.working,2);$('kDayUnit').textContent='needed';
+      $('kDayS1').textContent=wd.working+' working day'+(wd.working===1?'':'s')+' left';
+      let note=wd.off+' day'+(wd.off===1?'':'s')+' off in schedule';
+      const cov=scheduleCoverageEnd();
+      if(cov&&isoDay(G.targetDate)>isoDay(cov))note=wd.off+' days off · schedule ends '+fmtDay(cov);
+      $('kDayS2').textContent=note;
+    }else{
+      $('kDay').textContent='—';$('kDayUnit').textContent='';
+      $('kDayS1').textContent='No working days left before target';$('kDayS2').textContent='';
+    }
+  }else{
+    $('kDay').textContent='—';$('kDayUnit').textContent='';
+    $('kDayS1').textContent=goal>0&&toGo<=0?'Goal already met':G.targetState==='past'?'Target date has passed':'Set a target date';
+    $('kDayS2').textContent='';
+  }
+
+  updatePaceLine(reqMonth!==null?reqMonth:avg,reqMonth!==null);
 }
 
 // ── GOAL PLANNER ───────────────────────────────────────────────
 function calcGoalA(){
-  const hrs=parseFloat(document.getElementById('goalHours').value);
   const dateStr=document.getElementById('goalDate').value;
-  const rA=document.getElementById('goalResultA');
-  const vEl=document.getElementById('goalResAVal');
-  const lEl=document.getElementById('goalResALbl');
-  const hadTarget=!!G.targetDate;
-  if(!G.s||!hrs||!dateStr){
-    vEl.textContent='—';lEl.textContent='Enter a target and date above';rA.className='goal-result';
-    G.targetDate=null;G.targetHours=null;
-    if(hadTarget)renderCert();
-    calcWorkSchedule();
-    return;
+  G.targetDate=null;G.targetState='empty';
+  if(dateStr){
+    const t=new Date(dateStr+'T12:00:00');
+    if(t>new Date()){G.targetDate=t;G.targetState='ok';}
+    else G.targetState='past';
   }
-  const have=G.s.total;
-  const toGo=Math.max(0,hrs-have);
-  const now=new Date();
-  const target=new Date(dateStr+'T12:00:00');
-  const msLeft=target-now;
-  if(msLeft<=0){
-    vEl.textContent='—';lEl.textContent='Target date is in the past';rA.className='goal-result warn';
-    G.targetDate=null;G.targetHours=null;
-    if(hadTarget)renderCert();
-    calcWorkSchedule();
-    return;
-  }
-  G.targetDate=target;G.targetHours=hrs;
-  const monthsLeft=msLeft/(1000*60*60*24*30.44);
-  if(toGo===0){
-    vEl.textContent='Done!';lEl.textContent=`You already have ${fmt(have)} hrs — goal met.`;rA.className='goal-result ok';
-    renderCert();
-    calcWorkSchedule();
-    return;
-  }
-  const rate=toGo/monthsLeft;
-  vEl.textContent=fmt(rate)+' hrs/mo';
-  const diff=rate-(G.avg12||0);
-  const paceNote=G.avg12>0?(diff>0?` (+${fmt(diff,1)} above your ${fmt(G.avg12)} avg)`:` (${fmt(Math.abs(diff),1)} below your ${fmt(G.avg12)} avg)`):' ';
-  lEl.textContent=`Required monthly rate to reach ${fmt(hrs,0)} hrs by ${target.toLocaleDateString('en-US',{month:'long',year:'numeric'})}${paceNote}`;
-  rA.className='goal-result '+(rate<=(G.avg12||rate)?'ok':'warn');
-  renderCert();
-  calcWorkSchedule();
+  renderHero();
 }
 
 function calcGoalB(){
@@ -823,50 +931,6 @@ function parseICSOffDates(text){
   return off;
 }
 
-function calcWorkSchedule(){
-  const vEl=document.getElementById('goalResCVal');
-  const lEl=document.getElementById('goalResCLbl');
-  const rC=document.getElementById('goalResultC');
-  if(!WORKSCHED){
-    vEl.textContent='—';
-    lEl.textContent='Upload a work schedule (.ics) to see hours needed per working day, based on the target above';
-    rC.className='goal-result';
-    return;
-  }
-  if(!G.s||!G.targetDate||!G.targetHours){
-    vEl.textContent='—';
-    lEl.textContent='Set a target hours and date above to see hours needed per working day';
-    rC.className='goal-result';
-    return;
-  }
-  const have=G.s.total;
-  const toGo=Math.max(0,G.targetHours-have);
-  if(toGo===0){
-    vEl.textContent='Done!';lEl.textContent=`You already have ${fmt(have)} hrs — goal met.`;rC.className='goal-result ok';
-    return;
-  }
-  const today=new Date();today.setHours(0,0,0,0);
-  const target=new Date(G.targetDate);target.setHours(0,0,0,0);
-  if(target<today){
-    vEl.textContent='—';lEl.textContent='Target date is in the past';rC.className='goal-result warn';
-    return;
-  }
-  let workingDays=0,offDays=0;
-  for(let d=new Date(today);d<=target;d.setDate(d.getDate()+1)){
-    const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    if(WORKSCHED.offDates.has(iso))offDays++;else workingDays++;
-  }
-  if(workingDays===0){
-    vEl.textContent='—';lEl.textContent='No working days remain between today and your target date';rC.className='goal-result warn';
-    return;
-  }
-  const perDay=toGo/workingDays;
-  vEl.textContent=fmt(perDay,2)+' hrs/working day';
-  lEl.textContent=`${fmt(toGo,1)} hrs to go over ${workingDays} working day${workingDays===1?'':'s'} `+
-    `(${offDays} day${offDays===1?'':'s'} off) between now and ${target.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
-  rC.className='goal-result '+(perDay<=4?'ok':'warn');
-}
-
 function handleSchedule(file){
   if(!file)return;
   const r=new FileReader();
@@ -880,8 +944,8 @@ function handleSchedule(file){
       WORKSCHED={offDates:off,name:file.name};
       const n=file.name;
       document.getElementById('scheduleStatus').textContent=
-        `${n.length>28?n.slice(0,26)+'…':n} · ${off.size} day${off.size===1?'':'s'} off loaded`;
-      calcWorkSchedule();
+        `${n.length>40?n.slice(0,38)+'…':n} · ${off.size} day${off.size===1?'':'s'} off loaded`;
+      renderHero();
     }catch(err){
       alert('Could not parse this calendar file. Expected an .ics export with "Day Off" events.\n\n'+err.message);
     }
@@ -901,12 +965,10 @@ function renderDashboard(stats){
   document.getElementById('pdfBtn').classList.remove('hidden');
   document.getElementById('pdfBtn').classList.add('visible');
 
-  // print header
   const now=new Date();
   document.getElementById('printSub').textContent=
     `Generated ${now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${fmt(s.total)} total hours`;
 
-  // stat tiles
   const tiles=[
     {l:'Total time',  v:fmt(s.total),                    s:'hours',                     cls:'blue'},
     {l:'PIC',         v:fmt(s.pic),                      s:`${s.total?((s.pic/s.total)*100).toFixed(0):0}% of total`},
@@ -921,7 +983,6 @@ function renderDashboard(stats){
     `<div class="tile ${t.cls||''}"><div class="tile-lbl">${t.l}</div><div class="tile-val">${t.v}</div><div class="tile-sub">${t.s}</div></div>`
   ).join('');
 
-  // monthly chart
   const isMob=window.innerWidth<600;
   const mn=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const labels=mKeys.map(k=>{const[y,m]=k.split('-');return mn[parseInt(m)]+(isMob?'':`'${y.slice(2)}`);});
@@ -931,22 +992,20 @@ function renderDashboard(stats){
     type:'bar',
     data:{labels,datasets:[
       {data:mVals,backgroundColor:colors,borderRadius:{topLeft:2,topRight:2},borderSkipped:'bottom',categoryPercentage:.9,barPercentage:.9},
-      {type:'line',data:new Array(labels.length).fill(avg12||60),borderColor:'rgba(245,158,11,.5)',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false}
+      {type:'line',data:new Array(labels.length).fill(avg12||60),borderColor:'#f59e0b',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.datasetIndex===0?` ${c.parsed.y.toFixed(1)} hrs`:(G.targetDate?' target pace':' avg pace')}}},
       scales:{
-        x:{ticks:{color:'#475569',font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:isMob?8:18},grid:{display:false},border:{color:'rgba(255,255,255,.07)'}},
-        y:{ticks:{color:'#475569',font:{size:10},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,.05)'},border:{display:false},min:0}
+        x:{ticks:{color:'#6b7a93',font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:isMob?8:18},grid:{display:false},border:{color:'rgba(255,255,255,.07)'}},
+        y:{ticks:{color:'#6b7a93',font:{size:11},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,.05)'},border:{display:false},min:0}
       }
     }
   });
   G.monthlyChart=monthlyChart;
 
-  // cert checklist + gauges
   renderCert();
 
-  // breakdown
   const bd=[
     {l:'ASEL',v:fmt(s.asel)+' hrs'},{l:'AMEL',v:fmt(s.amel)+' hrs'},
     {l:'PIC',v:fmt(s.pic)+' hrs'},{l:'Dual given',v:fmt(s.dual_given)+' hrs'},
@@ -959,19 +1018,17 @@ function renderDashboard(stats){
     `<div class="brow"><span class="blbl">${b.l}</span><span class="bval">${b.v}</span></div>`
   ).join('');
 
-  // pace
   const m60=mVals.filter(v=>v>=60).length;
-  const projTotal=s.total+(avg12*(mLeft-0.5));
+  const projTotal=s.total+avg12*mLeft;
   document.getElementById('paceRow').innerHTML=[
     {l:'Last 12-mo avg',v:fmt(avg12)+' /mo'},
     {l:'All-time avg',v:fmt(avgAll)+' /mo'},
     {l:'Best month',v:fmt(bestVal)+' hrs',s:bestKey},
     {l:'Months ≥ 60',v:m60+' months',s:`${mVals.length?((m60/mVals.length)*100).toFixed(0):0}%`},
-    {l:'Projected total',v:projTotal>1500?'1,500+':fmt(projTotal)+' hrs',s:'at current pace'},
-    {l:'Months left',v:mLeft,s:'to Dec 31'},
+    {l:'Projected total',v:fmt(projTotal)+' hrs',s:'by Dec 31 at current pace'},
+    {l:'Months left',v:fmt(mLeft,1),s:'to Dec 31'},
   ].map(d=>`<div class="tile"><div class="tile-lbl">${d.l}</div><div class="tile-val" style="font-size:17px">${d.v}</div>${d.s?`<div class="tile-sub">${d.s}</div>`:''}</div>`).join('');
 
-  // yearly chart
   const yrK=Object.keys(yearly).sort();
   if(yearlyChart)yearlyChart.destroy();
   yearlyChart=new Chart(document.getElementById('yearlyChart'),{
@@ -980,22 +1037,20 @@ function renderDashboard(stats){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y.toFixed(1)} hrs`}}},
       scales:{
-        x:{ticks:{color:'#475569',font:{size:12}},grid:{display:false},border:{color:'rgba(255,255,255,.07)'}},
-        y:{ticks:{color:'#475569',callback:v=>v+'h'},grid:{color:'rgba(255,255,255,.05)'},border:{display:false},min:0}
+        x:{ticks:{color:'#6b7a93',font:{size:12}},grid:{display:false},border:{color:'rgba(255,255,255,.07)'}},
+        y:{ticks:{color:'#6b7a93',callback:v=>v+'h'},grid:{color:'rgba(255,255,255,.05)'},border:{display:false},min:0}
       }
     }
   });
 
-  // aircraft
   const topAC=Object.entries(aircraft).sort((a,b)=>b[1]-a[1]).slice(0,12);
   const maxAC=topAC[0]?.[1]||1;
   document.getElementById('acTable').querySelector('tbody').innerHTML=topAC.map(([id,h])=>
     `<tr><td>${id}<span class="ac-bar" style="width:${Math.round(h/maxAC*60)}px"></span></td><td>${fmt(h)}</td></tr>`
   ).join('');
 
-  // reset goal planner to freshly-calculated defaults on every upload: target hours
-  // = selected cert's primary requirement, target date = default target date. This
-  // avoids the pace line silently carrying over a stale target from a prior upload.
+  // reset the target to fresh defaults on every upload so the hero never carries
+  // over a stale target from a previously loaded logbook
   const primaryNeed=CERTS[document.getElementById('certSelect').value].reqs[0].need;
   document.getElementById('goalHours').value=primaryNeed;
   document.getElementById('goalHoursB').value=primaryNeed;
@@ -1003,7 +1058,25 @@ function renderDashboard(stats){
   calcGoalA();calcGoalB();
 }
 
+// ── MORE DETAILS TOGGLE ────────────────────────────────────────
+function setMore(open){
+  const el=document.getElementById('moreDetails');
+  const btn=document.getElementById('moreBtn');
+  el.classList.toggle('open',open);
+  btn.setAttribute('aria-expanded',open?'true':'false');
+  document.getElementById('moreLbl').textContent=open?'Hide details':'More details: planning tools, breakdown, trends, aircraft';
+  if(open&&yearlyChart)yearlyChart.resize();
+}
+function toggleMore(){setMore(!document.getElementById('moreDetails').classList.contains('open'));}
+
 // ── PDF EXPORT ─────────────────────────────────────────────────
+let moreWasOpen=false;
+window.addEventListener('beforeprint',()=>{
+  moreWasOpen=document.getElementById('moreDetails').classList.contains('open');
+  setMore(true);
+});
+window.addEventListener('afterprint',()=>{setMore(moreWasOpen);});
+
 function exportPDF(){
   const now=new Date();
   const mm=String(now.getMonth()+1).padStart(2,'0');
